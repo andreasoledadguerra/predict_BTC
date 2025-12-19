@@ -1,3 +1,8 @@
 .env
 env/
 __pycache__/
+
+POSTGRES_USER= andy
+POSTGRES_PASSWORD= secret123
+POSTGRES_DB= crypto
+POSTGRES_PORT=5432 
