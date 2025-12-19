@@ -1,0 +1,1 @@
+The PostgreSQL database is containerized using Docker Compose, with persistent volumes and environment-based configuration.
