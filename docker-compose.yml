@@ -5,7 +5,7 @@ services:
     container_name: postgres_coins
     environment:
       POSTGRES_USER: andy
-      POSTGRES_PASSWORD: 123456
+      POSTGRES_PASSWORD: secret123
       POSTGRES_DB: crypto
     ports:
       - "5433:5432"
