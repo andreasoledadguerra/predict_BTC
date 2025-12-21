@@ -9,7 +9,7 @@ def to_timestamp(date_str:str) -> int:
     )
 
 start_ts = to_timestamp("2024-10-01")
-end_ts = to_timestamp("2024-12-01")
+end_ts = to_timestamp("2024-11-01")
 #esta función sirve para recibir fecha inicial y fecha final
 
 #Call the API
