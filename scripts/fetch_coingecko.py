@@ -30,7 +30,7 @@ params = {
 headers = {
     "x-cg-pro-api-key":os.getenv("COINGECKO_API_KEY")
 }
-response = requests.get(url, params=params)
+response = requests.get(url, params=params, headers=headers)
 response.raise_for_status()
 data = response.json()
 
