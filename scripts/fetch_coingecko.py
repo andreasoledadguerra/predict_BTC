@@ -28,7 +28,7 @@ params = {
 }
 
 headers = {
-    "x-cg-pro-api-key":os.getenv("COINGECKO_API_KEY")
+    "x-cg-demo-api-key":os.getenv("COINGECKO_API_KEY")
 }
 response = requests.get(url, params=params, headers=headers)
 response.raise_for_status()
