@@ -8,9 +8,9 @@ load_dotenv()
 
 API_KEY = os.getenv("COINGECKO_API_KEY")
 
-#end_ts = int(datetime.now(timezone.utc).timestamp())
-#start_ts = int((datetime.now(timezone.utc) - timedelta(days=7)).timestamp())
-#
+end_ts = int(datetime.now(timezone.utc).timestamp())
+start_ts = int((datetime.now(timezone.utc) - timedelta(days=7)).timestamp())
+
 #Call the API
 url =  "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range"
 
