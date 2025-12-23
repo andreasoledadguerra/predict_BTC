@@ -20,12 +20,11 @@ params = {
     "to": end_ts
 }
 
-
 headers = {
     "accept": "application/json",
     "x-cg-demo-api-key": API_KEY
 }
-response = requests.get(url, params=params)
+response = requests.get(url, params=params, headers=headers)
 #esponse.raise_for_status()
 data = response.json()
 
