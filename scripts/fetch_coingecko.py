@@ -7,11 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 API_KEY = os.getenv("COINGECKO_API_KEY")
-print(f"API Key loaded: {'Yes' if API_KEY else 'No'}")
-print(f"API Key length: {len(API_KEY) if API_KEY else 0} characters")
-if API_KEY:
-    print(f"Key starts with: {API_KEY[:8]}...")
-#
+
 #end_ts = int(datetime.now(timezone.utc).timestamp())
 #start_ts = int((datetime.now(timezone.utc) - timedelta(days=7)).timestamp())
 #
