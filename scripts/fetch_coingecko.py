@@ -25,7 +25,8 @@ headers = {
     "x-cg-demo-api-key": API_KEY
 }
 response = requests.get(url, params=params, headers=headers)
-#esponse.raise_for_status()
+
+
 data = response.json()
 
 
