@@ -55,6 +55,4 @@ response = requests.get(url, params=params, headers=headers)
 data = response.json()
 
 
-# Basic output for inspection and debugging
-print("Keys:", data.keys())
-print("First price entry:", data["prices"][0])
+
