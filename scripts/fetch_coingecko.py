@@ -1,5 +1,6 @@
 import os
 import requests
+import pandas as pd
 
 # Standard library imports for date and time handling
 from datetime import datetime, timedelta, timezone
