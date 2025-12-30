@@ -8,6 +8,9 @@ from datetime import datetime, timedelta, timezone
 # Third-party library to load environment variables form a .env file
 from dotenv import load_dotenv
 
+from sqlalchemy import create_engine
+
+
 # Load variables defined in the .env file into the environment
 # making them accessible via os.getenv()
 load_dotenv()
