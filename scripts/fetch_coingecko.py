@@ -54,5 +54,18 @@ response = requests.get(url, params=params, headers=headers)
 # Parse the JSON response inti a Python dictionary
 data = response.json()
 
+ # ----------------------------------------------------------------------------
 
+df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
+
+df["date"] = pd.to_datetime(df["timestamp_ms"], unit="ms")
+df = df.drop(columns="timestamp_ms")
+
+#df = df.rename(columns={"price_usd": "price"})
+df["date"] = df["date"].dt.date
+df["asset"] = "BTC"
+df = df[["date", "price_usd", "asset"]]
+
+print(f"Datos obtenidos: {len(df)} registros")
+print(df.head())
 
