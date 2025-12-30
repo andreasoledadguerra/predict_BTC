@@ -22,6 +22,11 @@ load_dotenv()
 # Retrieve the CoinGecko API key from environment variables
 API_KEY = os.getenv("COINGECKO_API_KEY")
 
+# Retireve the Postgres environment variables
+POSTGRES_USER=     os.getenv("POSTGRES_USER")
+POSTGRES_PASSWORD= os.getenv("POSTGRES_PASSWORD")
+POSTGRES_DB=      os.getenv("POSTGRES_DB")
+POSTGRES_PORT=     os.getenv("POSTGRES_PORT")
 
 # Define the time range for the API request
 end_ts = int(datetime.now(timezone.utc).timestamp())
