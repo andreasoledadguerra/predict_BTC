@@ -69,3 +69,26 @@ df = df[["date", "price_usd", "asset"]]
 print(f"Datos obtenidos: {len(df)} registros")
 print(df.head())
 
+# ------------------------------------------------------------------------------
+#Test connection
+print("\nProbando conexión a PostgresSQL...")
+try: 
+    with engine.connect() as conn:
+        conn.execute("SELECT 1")
+        print("Conexión exitosa a PostgreSQL")
+except Exception as e:
+    print(f"Error de conexión: {e}")
+
+# Guardar en Postgres
+print("\nGuardando en la base de datos...") 
+try:
+    df.to_sql(
+        "btc_prices",
+        engine,
+        if_exists="replace", #sólo guarda registros nuevos
+        index=False,
+        method='multi' # for better performance
+    )
+    print(f" {len(df)} registros guardados exitosamente")
+except Exception as e:
+    print(f"Error al guardar: {e}")
