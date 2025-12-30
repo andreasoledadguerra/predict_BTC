@@ -10,6 +10,9 @@ from dotenv import load_dotenv
 
 from sqlalchemy import create_engine
 
+engine = create_engine(
+    "postgresql+psycopg2://andy:secret123@localhost:5432/crypto"
+)
 
 # Load variables defined in the .env file into the environment
 # making them accessible via os.getenv()
