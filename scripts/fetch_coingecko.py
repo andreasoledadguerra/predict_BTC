@@ -5,6 +5,8 @@ import pandas as pd
 # Standard library imports for date and time handling
 from datetime import datetime, timedelta, timezone
 
+from typing import Tuple
+
 # Third-party library to load environment variables form a .env file
 from dotenv import load_dotenv
 
