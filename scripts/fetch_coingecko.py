@@ -41,7 +41,7 @@ def fetch_date(start_ts: int, end_ts: int) -> Tuple[datetime,datetime]:
 # CoinGecko endpoint for retrieving price data within a time range
 url =  "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range"
 
-start_ts, end_ts = fetch_coin()
+start_ts, end_ts = fetch_date()
 
 # Query parameterss sent in the request URL
 params = {
