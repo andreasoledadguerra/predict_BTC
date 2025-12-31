@@ -29,11 +29,17 @@ POSTGRES_DB=      os.getenv("POSTGRES_DB")
 POSTGRES_PORT=     os.getenv("POSTGRES_PORT")
 
 # Define the time range for the API request
-end_ts = int(datetime.now(timezone.utc).timestamp())
-start_ts = int(datetime.now(timezone.utc).timestamp())
+
+def fetch_coin(i_date: int, f_date:int):
+    i_date = int(datetime.now(timezone.utc).timestamp())
+    f_date = int(datetime.now(timezone.utc).timestamp())
+
+    return i_date, f_date
 
 # CoinGecko endpoint for retrieving price data within a time range
 url =  "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range"
+
+start_ts, end_ts = fetch_coin()
 
 # Query parameterss sent in the request URL
 params = {
