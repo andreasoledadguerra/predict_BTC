@@ -32,34 +32,20 @@ POSTGRES_PORT=     os.getenv("POSTGRES_PORT")
 
 # Define the time range for the API request
 
-#def fetch_date(start_ts: str, end_ts: str) -> Tuple[int,int]:
-#    # Calcular timestamps
-#    #start_ts= int(datetime.now(timezone.utc).timestamp())
-#    #end_ts = int(datetime.now(timezone.utc).timestamp())
-#    start_dt = datetime.strptime(start_ts, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-#    end_dt   = datetime.strptime(end_ts, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-#
-#    start_ts = int(start_dt.timestamp())
-#    end_ts   = int(end_dt.timestamp())
-#
-#    
-#    return i_date, f_date
-
-
-
 def str_to_timestamp(date_str:str) -> int:
     dt = datetime.strptime(date_str, "%Y-%m-%d")
     dt = dt.replace(tzinfo=timezone.utc)
     return int(dt.timestamp())
 
-def fetch_date(start_date: str,end_date:str) -> Tuple [int,int]:
+
+def fetch_date(start_date: str, end_date: str) -> Tuple [int,int]:
     return (
         str_to_timestamp(start_date),
         str_to_timestamp(end_date),
     )
 
 
-#start_ts, end_ts = fetch_date(i_date=, f_date=)
+#start_ts, end_ts = fetch_date(start_date, end_date)
 
 
 # CoinGecko endpoint for retrieving price data within a time range
