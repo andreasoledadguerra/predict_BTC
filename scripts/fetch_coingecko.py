@@ -94,7 +94,7 @@ print(df.head())
 print("\nProbando conexión a PostgresSQL...")
 try: 
     with engine.connect() as conn:
-        conn.execute("SELECT 1")
+        conn.execute(text("SELECT 1"))
         print("Conexión exitosa a PostgreSQL")
 except Exception as e:
     print(f"Error de conexión: {e}")
