@@ -10,7 +10,7 @@ from typing import Tuple
 # Third-party library to load environment variables form a .env file
 from dotenv import load_dotenv
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 engine = create_engine(
     "postgresql+psycopg2://andy:secret123@localhost:5432/crypto"
@@ -32,6 +32,10 @@ POSTGRES_PORT=     os.getenv("POSTGRES_PORT")
 
 # Define the time range for the API request
 
+print(" Ingrese el rango de fechas (YYYY-MM-DD)")
+start_date_input = input("Fecha inicial: ")
+end_date_input = input("Fecha final: ")
+
 def str_to_timestamp(date_str:str) -> int:
     dt = datetime.strptime(date_str, "%Y-%m-%d")
     dt = dt.replace(tzinfo=timezone.utc)
@@ -44,15 +48,14 @@ def fetch_date(start_date: str, end_date: str) -> Tuple [int,int]:
         str_to_timestamp(end_date),
     )
 
-
-#start_ts, end_ts = fetch_date(start_date, end_date)
+start_ts, end_ts = fetch_date(start_date_input, end_date_input)
 
 
 # CoinGecko endpoint for retrieving price data within a time range
 url =  "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range"
 
 
-# Query parameterss sent in the request URL
+# Query parameters sent in the request URL
 params = {
     "vs_currency": "usd",
     "from": start_ts,
