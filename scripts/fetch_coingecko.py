@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 
 # Standard library imports for date and time handling
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 from typing import Tuple
 
