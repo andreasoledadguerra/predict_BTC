@@ -136,6 +136,18 @@ def save_to_database(df: pd.DataFrame):
         print(f"Error al guardar: {e}")
         raise
 
+# ----------------------------------------------------------------------------------
+
+def get_data_from_db(start_date:str, end_date:str) -> pd.DataFrame:
+    query = """
+    SELECT date, price_usd 
+    FROM btc_prices 
+    WHERE date BETWEEN %s AND %s 
+    ORDER BY date
+    """
+    df = pd.read_sql(query, engine, params=(start_date, end_date))
+    return df
+
 # ---------------------------------------------------------------------------------
   # Set data for regression
 prices = df["price_usd"].values
