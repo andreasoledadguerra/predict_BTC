@@ -8,6 +8,8 @@ from datetime import datetime, timezone
 
 from typing import Tuple
 
+from sklearn.linear_model import LinearRegression
+
 # Third-party library to load environment variables form a .env file
 from dotenv import load_dotenv
 
