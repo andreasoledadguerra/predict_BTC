@@ -150,24 +150,21 @@ def get_data_from_db(start_date:str, end_date:str) -> pd.DataFrame:
 
 # ---------------------------------------------------------------------------------
   # Set data for regression
-prices = df["price_usd"].values
+def train_and_predict(df: pd.DataFrame, future_days: int):
+    prices = df["price_usd"].values
+    X = np.arange(len(prices)).reshape(-1, 1)
+    y = prices
 
-X = np.arange(len(prices)).reshape(-1, 1)
+    # Training linear regression
+    model = LinearRegression()
+    model.fit(X, y)
 
-y = prices
+    # Definir el rango de predicción
 
-# Training linear regression
-model = LinearRegression()
-model.fit(X, y)
+    X_future = np.arange(len(prices), len(prices) + future_days).reshape(-1, 1)
+    predictions = model.predict(X_future)
 
-# ----------------------------------------------------------------------------------
-# Definir el rango de predicción (rango B)
-    # Supongamos que queremos predecir los próximos 10
-
-future_steps = 10
-
-X_future = np.arange(len(prices), len(prices) + future_steps).reshape(-1, 1)
-predictions = model.predict(X_future)
+    return predictions
 
 # -----------------------------------------------------------------------------------
 
