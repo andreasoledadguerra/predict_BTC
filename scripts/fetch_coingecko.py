@@ -45,36 +45,36 @@ def str_to_timestamp(date_str:str) -> int:
 
 
 def fetch_date(start_date: str, end_date: str) -> Tuple [int,int]:
-    return (
-        str_to_timestamp(start_date),
-        str_to_timestamp(end_date),
-    )
+    
+    start_ts = str_to_timestamp(start_date)
+    end_ts =str_to_timestamp(end_date)
 
-start_ts, end_ts = fetch_date(start_date_input, end_date_input)
-
-
-# CoinGecko endpoint for retrieving price data within a time range
-url =  "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range"
+    # start_ts, end_ts = fetch_date(start_date_input, end_date_input)
 
 
-# Query parameters sent in the request URL
-params = {
-    "vs_currency": "usd",
-    "from": start_ts,
-    "to": end_ts
-}
+    # CoinGecko endpoint for retrieving price data within a time range
+    url =  "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range"
 
-# HTTP headers, including the demo API key
-headers = {
-    #"accept": "application/json",
-    "x-cg-demo-api-key": API_KEY
-}
+    # Query parameters sent in the request URL
+    params = {
+        "vs_currency": "usd",
+        "from": start_ts,
+        "to": end_ts
+    }
 
-# Perform the API request
-response = requests.get(url, params=params, headers=headers)
+    # HTTP headers, including the demo API key
+    headers = {
+        #"accept": "application/json",
+        "x-cg-demo-api-key": API_KEY
+    }
 
-# Parse the JSON response inti a Python dictionary
-data = response.json()
+    # Perform the API request
+    response = requests.get(url, params=params, headers=headers)
+
+    # Parse the JSON response inti a Python dictionary
+    #data = response.json()
+
+    return df
 
 # ========== DEBUG ==========
 print("\n" + "="*60)
@@ -174,3 +174,72 @@ def train_and_predict(df: pd.DataFrame, future_days: int):
 #plt.plot(X_future, predictions, label="Predicción")
 #plt.legend()
 #plt.show()
+
+# -----------------------------------------------------------
+
+def main():
+    print("=" * 70)
+    print("🚀 BITCOIN PRICE PREDICTOR")
+    print("=" * 70)
+    
+    # ========================================================================
+    # PARTE 1: OBTENER Y GUARDAR DATOS NUEVOS
+    # ========================================================================
+    print("\n📥 PARTE 1: Obtener datos nuevos de CoinGecko")
+    print("-" * 70)
+    
+    print("\nIngrese el rango de fechas para DESCARGAR datos nuevos:")
+    fetch_start = input("  Fecha inicial (YYYY-MM-DD): ")
+    fetch_end = input("  Fecha final (YYYY-MM-DD): ")
+    
+    # Obtener datos de la API
+    df_new = fetch_bitcoin_data(fetch_start, fetch_end)
+    print("\nPreview de los datos obtenidos:")
+    print(df_new.head())
+    
+    # Guardar en la base de datos
+    save_to_database(df_new)
+    
+    # ========================================================================
+    # PARTE 2: LEER DATOS DE LA DB Y PREDECIR
+    # ========================================================================
+    print("\n" + "=" * 70)
+    print("🔮 PARTE 2: Predecir precios usando datos de la base de datos")
+    print("-" * 70)
+    
+    print("\nIngrese el rango de fechas para ENTRENAR el modelo:")
+    print("(Puede ser el mismo rango u otro diferente)")
+    train_start = input("  Fecha inicial (YYYY-MM-DD): ")
+    train_end = input("  Fecha final (YYYY-MM-DD): ")
+    
+    # LEER desde la base de datos (NO de la API)
+    df_train = get_data_from_db(train_start, train_end)
+    
+    if len(df_train) == 0:
+        print("❌ No hay datos en la base de datos para ese rango")
+        print("💡 Asegúrate de haber descargado datos primero")
+        return
+    
+    print("\nPreview de los datos de entrenamiento:")
+    print(df_train.head())
+    
+    # Entrenar y predecir
+    future_days = int(input("\n¿Cuántos días quieres predecir? (default: 10): ") or "10")
+    predictions = train_and_predict(df_train, future_days)
+    
+    print("\n" + "=" * 70)
+    print("✅ Proceso completado exitosamente")
+    print("=" * 70)
+
+
+# ============================================================================
+# EJECUTAR
+# ============================================================================
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n\n⚠️ Proceso cancelado por el usuario")
+    except Exception as e:
+        print(f"\n❌ Error: {e}")
