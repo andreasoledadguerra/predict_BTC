@@ -1,6 +1,7 @@
 import os
 import requests
 import pandas as pd
+import numpy as np
 
 # Standard library imports for date and time handling
 from datetime import datetime, timezone
@@ -129,3 +130,5 @@ try:
     print(f" {len(df)} registros guardados exitosamente")
 except Exception as e:
     print(f"Error al guardar: {e}")
+
+# ---------------------------------------------------------------------------------
