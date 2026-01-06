@@ -125,7 +125,7 @@ try:
     df.to_sql(
         "btc_prices",
         engine,
-        if_exists="replace", #sólo guarda registros nuevos
+        if_exists="append", # no borra datos anteriores
         index=False,
         method='multi' # for better performance
     )
@@ -154,3 +154,11 @@ future_steps = 10
 X_future = np.arange(len(prices), len(prices) + future_steps).reshape(-1, 1)
 predictions = model.predict(X_future)
 
+# -----------------------------------------------------------------------------------
+
+#import matplotlib.pyplot as plt
+#
+#plt.plot(X, y, label="Datos reales")
+#plt.plot(X_future, predictions, label="Predicción")
+#plt.legend()
+#plt.show()
