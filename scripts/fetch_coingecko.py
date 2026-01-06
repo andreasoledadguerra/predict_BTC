@@ -144,3 +144,13 @@ y = prices
 # Training linear regression
 model = LinearRegression()
 model.fit(X, y)
+
+# ----------------------------------------------------------------------------------
+# Definir el rango de predicción (rango B)
+    # Supongamos que queremos predecir los próximos 10
+
+future_steps = 10
+
+X_future = np.arange(len(prices), len(prices) + future_steps).reshape(-1, 1)
+predictions = model.predict(X_future)
+
