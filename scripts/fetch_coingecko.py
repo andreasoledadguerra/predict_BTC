@@ -135,10 +135,12 @@ except Exception as e:
 
 # ---------------------------------------------------------------------------------
   # Set data for regression
-
 prices = df["price_usd"].values
 
 X = np.arange(len(prices)).reshape(-1, 1)
 
-Y = prices
+y = prices
 
+# Training linear regression
+model = LinearRegression()
+model.fit(X, y)
