@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
 engine = create_engine(
-    "postgresql+psycopg2://andy:secret123@localhost:5432/crypto"
+    f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{POSTGRES_DB}"
 )
 
 # Load variables defined in the .env file into the environment
@@ -64,7 +64,7 @@ params = {
 
 # HTTP headers, including the demo API key
 headers = {
-    "accept": "application/json",
+    #"accept": "application/json",
     "x-cg-demo-api-key": API_KEY
 }
 
@@ -74,6 +74,24 @@ response = requests.get(url, params=params, headers=headers)
 # Parse the JSON response inti a Python dictionary
 data = response.json()
 
+# ========== DEBUG ==========
+print("\n" + "="*60)
+print("🔍 DEBUG - Respuesta de la API:")
+print(f"Status Code: {response.status_code}")
+print(f"Keys en respuesta: {list(data.keys())}")
+print(f"Respuesta completa: {data}")
+print("="*60 + "\n")
+
+# Verificar si hay error
+if "error" in data:
+    raise Exception(f"❌ API Error: {data['error']}")
+
+if "prices" not in data:
+    raise Exception(f"❌ La respuesta no contiene 'prices'. Respuesta: {data}")
+# ===================================================
+
+# Process data
+df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
  # ----------------------------------------------------------------------------
 
 df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
