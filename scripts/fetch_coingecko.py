@@ -120,18 +120,21 @@ except Exception as e:
     print(f"Error de conexión: {e}")
 
 # Guardar en Postgres
-print("\nGuardando en la base de datos...") 
-try:
-    df.to_sql(
-        "btc_prices",
-        engine,
-        if_exists="append", # no borra datos anteriores
-        index=False,
-        method='multi' # for better performance
-    )
-    print(f" {len(df)} registros guardados exitosamente")
-except Exception as e:
-    print(f"Error al guardar: {e}")
+def save_to_database(df: pd.DataFrame):
+    print("\nGuardando en la base de datos...")
+
+    try:
+        df.to_sql(
+            "btc_prices",
+            engine,
+            if_exists="append", # no borra datos anteriores
+            index=False,
+            method='multi' # for better performance
+        )
+        print(f" {len(df)} registros guardados exitosamente")
+    except Exception as e:
+        print(f"Error al guardar: {e}")
+        raise
 
 # ---------------------------------------------------------------------------------
   # Set data for regression
