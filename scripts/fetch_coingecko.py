@@ -71,26 +71,11 @@ def fetch_date(start_date: str, end_date: str) -> Tuple [int,int]:
     # Perform the API request
     response = requests.get(url, params=params, headers=headers)
 
-    # Parse the JSON response inti a Python dictionary
-    #data = response.json()
+    # Parse the JSON response into a Python dictionary
+    data = response.json()
 
     return df
 
-# ========== DEBUG ==========
-print("\n" + "="*60)
-print("🔍 DEBUG - Respuesta de la API:")
-print(f"Status Code: {response.status_code}")
-print(f"Keys en respuesta: {list(data.keys())}")
-print(f"Respuesta completa: {data}")
-print("="*60 + "\n")
-
-# Verificar si hay error
-if "error" in data:
-    raise Exception(f"❌ API Error: {data['error']}")
-
-if "prices" not in data:
-    raise Exception(f"❌ La respuesta no contiene 'prices'. Respuesta: {data}")
-# ===================================================
 
 # Process data
 df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
