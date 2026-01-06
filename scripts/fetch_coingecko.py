@@ -12,23 +12,22 @@ from dotenv import load_dotenv
 
 from sqlalchemy import create_engine, text
 
-engine = create_engine(
-    f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{POSTGRES_DB}"
-)
-
 # Load variables defined in the .env file into the environment
 # making them accessible via os.getenv()
 load_dotenv()
 
+# Retireve the Postgres environment variables
+POSTGRES_USER= os.getenv("POSTGRES_USER")
+POSTGRES_PASSWORD= os.getenv("POSTGRES_PASSWORD")
+POSTGRES_DB= os.getenv("POSTGRES_DB")
+POSTGRES_PORT= os.getenv("POSTGRES_PORT")
+
+engine = create_engine(
+    f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{POSTGRES_DB}"
+)
 
 # Retrieve the CoinGecko API key from environment variables
 API_KEY = os.getenv("COINGECKO_API_KEY")
-
-# Retireve the Postgres environment variables
-POSTGRES_USER=     os.getenv("POSTGRES_USER")
-POSTGRES_PASSWORD= os.getenv("POSTGRES_PASSWORD")
-POSTGRES_DB=      os.getenv("POSTGRES_DB")
-POSTGRES_PORT=     os.getenv("POSTGRES_PORT")
 
 # Define the time range for the API request
 
