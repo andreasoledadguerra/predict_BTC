@@ -74,25 +74,30 @@ def fetch_date(start_date: str, end_date: str) -> Tuple [int,int]:
     # Parse the JSON response into a Python dictionary
     data = response.json()
 
+    df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
+    df["date"] = pd.to_datetime(df["timestamp_ms"], unit="ms").dt.date
+    df["asset"] = "BTC"
+    df = df[["date", "price_usd", "asset"]]
+    
+    print(f"✅ {len(df)} registros obtenidos")
+
     return df
 
 
 # Process data
-df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
- # ----------------------------------------------------------------------------
 
-df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
-
-df["date"] = pd.to_datetime(df["timestamp_ms"], unit="ms")
-df = df.drop(columns="timestamp_ms")
-
-#df = df.rename(columns={"price_usd": "price"})
-df["date"] = df["date"].dt.date
-df["asset"] = "BTC"
-df = df[["date", "price_usd", "asset"]]
-
-print(f"Datos obtenidos: {len(df)} registros")
-print(df.head())
+#df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
+#
+#df["date"] = pd.to_datetime(df["timestamp_ms"], unit="ms")
+#df = df.drop(columns="timestamp_ms")
+#
+##df = df.rename(columns={"price_usd": "price"})
+#df["date"] = df["date"].dt.date
+#df["asset"] = "BTC"
+#df = df[["date", "price_usd", "asset"]]
+#
+#print(f"Datos obtenidos: {len(df)} registros")
+#print(df.head())
 
 # ------------------------------------------------------------------------------
 #Test connection
