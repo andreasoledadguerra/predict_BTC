@@ -132,3 +132,11 @@ except Exception as e:
     print(f"Error al guardar: {e}")
 
 # ---------------------------------------------------------------------------------
+  # Set data for regression
+
+prices = df["price_usd"].values
+
+X = np.arange(len(prices)).reshape(-1, 1)
+
+Y = prices
+
