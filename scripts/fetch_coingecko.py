@@ -192,10 +192,27 @@ def main():
     print(df_train.head())
     
     # Entrenar y predecir
-    future_days = int(input("\n¿Cuántos días quieres predecir? (default: 10): ") or "10")
+    #future_days = int(input("\n¿Cuántos días quieres predecir? (default: 10): ") or "10")
+    #predictions = train_and_predict(df_train, future_days)
+    #print(predictions)
+
+    print(f"Registros usados para entrenar: {len(df_train)}")
+    print(df_train.tail())
+
+
+    try:
+        days_input = input("\nElija cuántos días quiere predecir (Si apreta Enter serán 10): ")
+        future_days = int(days_input) if days_input.strip() else 10
+    except ValueError:
+        print(" Entrada inválida, usando 10 días")
+        future_days = 10
+
     predictions = train_and_predict(df_train, future_days)
-    
-    print(predictions)
+
+    print("\n Predicciones:")
+    for i, pred in enumerate(predictions, 1):
+        print(f"   Día +{i}: ${pred:,.2f}")
+
 
     print("\n" + "=" * 70)
     print(" Proceso completado exitosamente")
