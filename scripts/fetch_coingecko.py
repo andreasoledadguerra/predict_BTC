@@ -31,7 +31,7 @@ engine = create_engine(
 #start_date_input = input("Fecha inicial: ")
 #end_date_input = input("Fecha final: ")
 
-# Data transfromation
+# Convert date string to timestamp Unix
 def str_to_timestamp(date_str:str) -> int:
     dt = datetime.strptime(date_str, "%Y-%m-%d")
     dt = dt.replace(tzinfo=timezone.utc)
