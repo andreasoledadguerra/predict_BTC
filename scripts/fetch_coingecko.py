@@ -223,9 +223,4 @@ def main():
 # EJECUTAR
 
 if __name__ == "__main__":
-    try:
         main()
-    except KeyboardInterrupt:
-        print("\n\nProceso cancelado por el usuario")
-    except Exception as e:
-        print(f"\n Error: {e}")
