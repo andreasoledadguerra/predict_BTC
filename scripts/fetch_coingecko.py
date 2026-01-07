@@ -162,11 +162,7 @@ def main():
     
     print("\nPreview de los datos de entrenamiento:")
     print(df_train.head())
-    
-    # Entrenar y predecir
-    #future_days = int(input("\n¿Cuántos días quieres predecir? (default: 10): ") or "10")
-    #predictions = train_and_predict(df_train, future_days)
-    #print(predictions)
+
 
     print(f"Registros usados para entrenar: {len(df_train)}")
     print(df_train.tail())
@@ -193,6 +189,5 @@ def main():
 
 
 # EJECUTAR
-
 if __name__ == "__main__":
         main()
