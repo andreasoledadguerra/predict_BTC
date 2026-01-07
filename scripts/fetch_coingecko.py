@@ -195,6 +195,8 @@ def main():
     future_days = int(input("\n¿Cuántos días quieres predecir? (default: 10): ") or "10")
     predictions = train_and_predict(df_train, future_days)
     
+    print(predictions)
+
     print("\n" + "=" * 70)
     print(" Proceso completado exitosamente")
     print("=" * 70)
