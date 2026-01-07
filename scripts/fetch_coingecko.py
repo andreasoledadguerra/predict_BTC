@@ -38,7 +38,7 @@ def str_to_timestamp(date_str:str) -> int:
     return int(dt.timestamp())
 
 # Get data from API
-def fetch_date(start_date: str, end_date: str) -> Tuple [int,int]:
+def fetch_date(start_date: str, end_date: str) -> pd.DataFrame:
     
     start_ts = str_to_timestamp(start_date)
     end_ts =str_to_timestamp(end_date)
