@@ -3,16 +3,10 @@ import requests
 import pandas as pd
 import numpy as np
 
-# Standard library imports for date and time handling
 from datetime import datetime, timezone
-
 from typing import Tuple
-
 from sklearn.linear_model import LinearRegression
-
-# Third-party library to load environment variables form a .env file
 from dotenv import load_dotenv
-
 from sqlalchemy import create_engine, text
 
 # Load variables defined in the .env file into the environment
@@ -24,32 +18,32 @@ POSTGRES_PASSWORD= os.getenv("POSTGRES_PASSWORD")
 POSTGRES_DB= os.getenv("POSTGRES_DB")
 POSTGRES_PORT= os.getenv("POSTGRES_PORT")
 
+# Retrieve the CoinGecko API key from environment variables
+API_KEY = os.getenv("COINGECKO_API_KEY")
+
+# Create conection to database
 engine = create_engine(
     f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{POSTGRES_DB}"
 )
 
-# Retrieve the CoinGecko API key from environment variables
-API_KEY = os.getenv("COINGECKO_API_KEY")
-
 # Define the time range for the API request
+#print(" Ingrese el rango de fechas (YYYY-MM-DD)")
+#start_date_input = input("Fecha inicial: ")
+#end_date_input = input("Fecha final: ")
 
-print(" Ingrese el rango de fechas (YYYY-MM-DD)")
-start_date_input = input("Fecha inicial: ")
-end_date_input = input("Fecha final: ")
-
+# Data transfromation
 def str_to_timestamp(date_str:str) -> int:
     dt = datetime.strptime(date_str, "%Y-%m-%d")
     dt = dt.replace(tzinfo=timezone.utc)
     return int(dt.timestamp())
 
-
+# Get data from API
 def fetch_date(start_date: str, end_date: str) -> Tuple [int,int]:
     
     start_ts = str_to_timestamp(start_date)
     end_ts =str_to_timestamp(end_date)
 
     # start_ts, end_ts = fetch_date(start_date_input, end_date_input)
-
 
     # CoinGecko endpoint for retrieving price data within a time range
     url =  "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range"
@@ -78,13 +72,12 @@ def fetch_date(start_date: str, end_date: str) -> Tuple [int,int]:
     df["asset"] = "BTC"
     df = df[["date", "price_usd", "asset"]]
     
-    print(f"✅ {len(df)} registros obtenidos")
+    print(f"{len(df)} registros obtenidos")
 
     return df
 
 
 # Process data
-
 #df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
 #
 #df["date"] = pd.to_datetime(df["timestamp_ms"], unit="ms")
@@ -97,17 +90,7 @@ def fetch_date(start_date: str, end_date: str) -> Tuple [int,int]:
 #
 #print(f"Datos obtenidos: {len(df)} registros")
 #print(df.head())
-
-# ------------------------------------------------------------------------------
-#Test connection
-print("\nProbando conexión a PostgresSQL...")
-try: 
-    with engine.connect() as conn:
-        conn.execute(text("SELECT 1"))
-        print("Conexión exitosa a PostgreSQL")
-except Exception as e:
-    print(f"Error de conexión: {e}")
-
+# 
 # Guardar en Postgres
 def save_to_database(df: pd.DataFrame):
     print("\nGuardando en la base de datos...")
@@ -125,8 +108,7 @@ def save_to_database(df: pd.DataFrame):
         print(f"Error al guardar: {e}")
         raise
 
-# ----------------------------------------------------------------------------------
-
+# Get data from database
 def get_data_from_db(start_date:str, end_date:str) -> pd.DataFrame:
     query = """
     SELECT date, price_usd 
@@ -137,8 +119,7 @@ def get_data_from_db(start_date:str, end_date:str) -> pd.DataFrame:
     df = pd.read_sql(query, engine, params=(start_date, end_date))
     return df
 
-# ---------------------------------------------------------------------------------
-  # Set data for regression
+# Set data for regression
 def train_and_predict(df: pd.DataFrame, future_days: int):
     prices = df["price_usd"].values
     X = np.arange(len(prices)).reshape(-1, 1)
@@ -226,6 +207,6 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n\n⚠️ Proceso cancelado por el usuario")
+        print("\n\nProceso cancelado por el usuario")
     except Exception as e:
         print(f"\n Error: {e}")
