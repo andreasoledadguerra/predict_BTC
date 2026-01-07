@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from typing import Tuple
 from sklearn.linear_model import LinearRegression
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 
 # Load variables defined in the .env file into the environment
 load_dotenv()
@@ -25,11 +25,6 @@ API_KEY = os.getenv("COINGECKO_API_KEY")
 engine = create_engine(
     f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{POSTGRES_DB}"
 )
-
-# Define the time range for the API request
-#print(" Ingrese el rango de fechas (YYYY-MM-DD)")
-#start_date_input = input("Fecha inicial: ")
-#end_date_input = input("Fecha final: ")
 
 # Convert date string to timestamp Unix
 def str_to_timestamp(date_str:str) -> int:
@@ -76,21 +71,6 @@ def fetch_date(start_date: str, end_date: str) -> pd.DataFrame:
 
     return df
 
-
-# Process data
-#df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
-#
-#df["date"] = pd.to_datetime(df["timestamp_ms"], unit="ms")
-#df = df.drop(columns="timestamp_ms")
-#
-##df = df.rename(columns={"price_usd": "price"})
-#df["date"] = df["date"].dt.date
-#df["asset"] = "BTC"
-#df = df[["date", "price_usd", "asset"]]
-#
-#print(f"Datos obtenidos: {len(df)} registros")
-#print(df.head())
-# 
 # Guardar en Postgres
 def save_to_database(df: pd.DataFrame):
     print("\nGuardando en la base de datos...")
@@ -136,20 +116,12 @@ def train_and_predict(df: pd.DataFrame, future_days: int):
 
     return predictions
 
-# -----------------------------------------------------------------------------------
-
-#import matplotlib.pyplot as plt
-#
-#plt.plot(X, y, label="Datos reales")
-#plt.plot(X_future, predictions, label="Predicción")
-#plt.legend()
-#plt.show()
 
 # -----------------------------------------------------------
 
 def main():
     print("=" * 70)
-    print("🚀 BITCOIN PRICE PREDICTOR")
+    print("BITCOIN PRICE PREDICTOR")
     print("=" * 70)
     
     
