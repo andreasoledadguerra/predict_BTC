@@ -9,10 +9,10 @@ from sklearn.linear_model import LinearRegression
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
-# Load variables defined in the .env file into the environment
+# Load variables defined in the .env file into the environment (borrar)
 load_dotenv()
 
-# Retireve the Postgres environment variables
+# Retireve the Postgres environment variables (borrar)
 POSTGRES_USER= os.getenv("POSTGRES_USER")
 POSTGRES_PASSWORD= os.getenv("POSTGRES_PASSWORD")
 POSTGRES_DB= os.getenv("POSTGRES_DB")
@@ -32,7 +32,7 @@ def str_to_timestamp(date_str:str) -> int:
     dt = dt.replace(tzinfo=timezone.utc)
     return int(dt.timestamp())
 
-# Get data from API
+# Get data from CoinGecko's API
 def fetch_date(start_date: str, end_date: str) -> pd.DataFrame:
     
     start_ts = str_to_timestamp(start_date)
@@ -125,8 +125,8 @@ def main():
     print("=" * 70)
     
     
-    # PARTE 1: OBTENER Y GUARDAR DATOS NUEVOS
-    print("\n PARTE 1: Obtener datos nuevos de CoinGecko")
+    # 1: OBTENER Y GUARDAR DATOS NUEVOS
+    print("\nObtener datos nuevos de CoinGecko")
     print("-" * 70)
     
     print("\nIngrese el rango de fechas para DESCARGAR datos nuevos:")
@@ -142,9 +142,9 @@ def main():
     save_to_database(df_new)
     
     
-    # PARTE 2: LEER DATOS DE LA DB Y PREDECIR
+    # 2: LEER DATOS DE LA DB Y PREDECIR
     print("\n" + "=" * 70)
-    print("PARTE 2: Predecir precios usando datos de la base de datos")
+    print("Predecir precios usando datos de la base de datos")
     print("-" * 70)
     
     print("\nIngrese el rango de fechas para ENTRENAR el modelo:")
@@ -157,12 +157,10 @@ def main():
     
     if len(df_train) == 0:
         print(" No hay datos en la base de datos para ese rango")
-        print(" Aseguate de haber descargado datos primero")
         return
     
     print("\nPreview de los datos de entrenamiento:")
     print(df_train.head())
-
 
     print(f"Registros usados para entrenar: {len(df_train)}")
     print(df_train.tail())
