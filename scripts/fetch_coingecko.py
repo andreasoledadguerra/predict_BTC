@@ -165,7 +165,6 @@ def main():
     print(f"Registros usados para entrenar: {len(df_train)}")
     print(df_train.tail())
 
-
     try:
         days_input = input("\nElija cuántos días quiere predecir (Si apreta Enter serán 10): ")
         future_days = int(days_input) if days_input.strip() else 10
@@ -177,7 +176,7 @@ def main():
 
     print("\n Predicciones:")
     for i, pred in enumerate(predictions, 1):
-        print(f"   Día +{i}: ${pred:,.2f}")
+        print(f"   Día {i}: ${pred:,.2f}")
 
 
     print("\n" + "=" * 70)
