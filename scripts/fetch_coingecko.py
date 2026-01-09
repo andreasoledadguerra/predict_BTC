@@ -37,7 +37,7 @@ def convert_to_unix(start_date:str, end_date: str) -> tuple[int, int]:
     end_ts =str_to_timestamp(end_date)
     return start_ts, end_ts
 
-def build_coingecko_resquest(start_ts: int, end_ts: int) -> dict:
+def build_coingecko_request(start_ts: int, end_ts: int) -> dict:
     return {
         "url":  "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range",
         "params": {      
@@ -50,16 +50,25 @@ def build_coingecko_resquest(start_ts: int, end_ts: int) -> dict:
         }
     }
 
+def fetch_from_api(url: str, params: dict, headers: dict) -> dict:
+    response = requests.get(url, params=params, headers=headers)
+
+    if response.status_code != 200:
+        raise Exception(f"API Error: {response.status_code}")
+    
+    return response.json() # Parse the JSON response into a Python dictionary
+
+
+
+
+
 # Get data from CoinGecko's API
 def fetch_date(start_date: str, end_date: str) -> pd.DataFrame:
     
     # CoinGecko endpoint for retrieving price data within a time rang
 
     # Perform the API request
-    response = requests.get(url, params=params, headers=headers)
-
-    # Parse the JSON response into a Python dictionary
-    data = response.json()
+  
 
     df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
     df["date"] = pd.to_datetime(df["timestamp_ms"], unit="ms").dt.date
