@@ -26,17 +26,20 @@ engine = create_engine(
     f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{POSTGRES_DB}"
 )
 
-# Convert date string to timestamp Unix
 def str_to_timestamp(date_str:str) -> int:
     dt = datetime.strptime(date_str, "%Y-%m-%d")
     dt = dt.replace(tzinfo=timezone.utc)
     return int(dt.timestamp())
 
+# Convert date string to timestamp Unix
+def convert_to_unix(start_date:str, end_date: str) -> tuple[int, int]:
+    start_ts = str_to_timestamp(start_date)
+    end_ts =str_to_timestamp(end_date)
+    return start_ts, end_ts
+
 # Get data from CoinGecko's API
 def fetch_date(start_date: str, end_date: str) -> pd.DataFrame:
     
-    start_ts = str_to_timestamp(start_date)
-    end_ts =str_to_timestamp(end_date)
 
     # start_ts, end_ts = fetch_date(start_date_input, end_date_input)
 
