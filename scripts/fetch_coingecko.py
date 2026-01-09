@@ -58,9 +58,24 @@ def fetch_from_api(url: str, params: dict, headers: dict) -> dict:
     
     return response.json() # Parse the JSON response into a Python dictionary
 
+def parse_price_data(data:dict) -> pd.DataFrame:
 
+    if "prices" not in data:
+        raise ValueError ("La respuesta no contiene 'prices'")
+    
+    # Create basic DataFrame
+    df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
 
+    # Transformar timestamp a fecha
+    df["date"] = pd.to_datetime(df["timestamp_ms"], unit="ms").dt.date
 
+    # Agregar columna de activo
+    df["asset"] = "BTC"
+
+    # Reordenar columnas
+    df = df[["date", "proce_usd", "asset"]]
+
+    return df
 
 # Get data from CoinGecko's API
 def fetch_date(start_date: str, end_date: str) -> pd.DataFrame:
