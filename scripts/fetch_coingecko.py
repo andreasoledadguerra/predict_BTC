@@ -9,33 +9,36 @@ from sklearn.linear_model import LinearRegression
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
-# Load variables defined in the .env file into the environment (borrar)
+# Load variables defined in the .env file into the environment (delete)
 load_dotenv()
 
-# Retireve the Postgres environment variables (borrar)
+# Retireve the Postgres environment variables (delete)
 POSTGRES_USER= os.getenv("POSTGRES_USER")
 POSTGRES_PASSWORD= os.getenv("POSTGRES_PASSWORD")
 POSTGRES_DB= os.getenv("POSTGRES_DB")
 POSTGRES_PORT= os.getenv("POSTGRES_PORT")
 
-# Retrieve the CoinGecko API key from environment variables
+# Retrieve the CoinGecko API key from environment variables(delete)
 API_KEY = os.getenv("COINGECKO_API_KEY")
 
-# Create conection to database
+# Create conection to database(delete)
 engine = create_engine(
     f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{POSTGRES_DB}"
 )
+
 
 def str_to_timestamp(date_str:str) -> int:
     dt = datetime.strptime(date_str, "%Y-%m-%d")
     dt = dt.replace(tzinfo=timezone.utc)
     return int(dt.timestamp())
 
+
 # Convert date string to timestamp Unix
 def convert_to_unix(start_date:str, end_date: str) -> tuple[int, int]:
     start_ts = str_to_timestamp(start_date)
     end_ts =str_to_timestamp(end_date)
     return start_ts, end_ts
+
 
 def build_coingecko_request(start_ts: int, end_ts: int) -> dict:
     return {
@@ -50,6 +53,7 @@ def build_coingecko_request(start_ts: int, end_ts: int) -> dict:
         }
     }
 
+
 def fetch_from_api(url: str, params: dict, headers: dict) -> dict:
     response = requests.get(url, params=params, headers=headers)
 
@@ -58,15 +62,15 @@ def fetch_from_api(url: str, params: dict, headers: dict) -> dict:
     
     return response.json() # Parse the JSON response into a Python dictionary
 
+
 def parse_price_data(data:dict) -> pd.DataFrame:
 
     if "prices" not in data:
         raise ValueError ("La respuesta no contiene 'prices'")
     
-    # Create basic DataFrame
     df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
 
-    # Transformar timestamp a fecha
+    # Transformar timestamp a fecha (borrar)
     df["date"] = pd.to_datetime(df["timestamp_ms"], unit="ms").dt.date
 
     # Agregar columna de activo
@@ -77,7 +81,7 @@ def parse_price_data(data:dict) -> pd.DataFrame:
 
     return df
 
-# Get data from CoinGecko's API
+# Get data from CoinGecko's API (delete)
 def fetch_bitcoin_prices(start_date: str, end_date: str) -> pd.DataFrame:
     start_ts, end_ts = convert_to_unix(start_date, end_date)
     request_config = build_coingecko_request(start_ts, end_ts)
@@ -94,7 +98,7 @@ def fetch_bitcoin_prices(start_date: str, end_date: str) -> pd.DataFrame:
     print(f" {len(df)} registros obtenidos")
     return df
         
-# Guardar en Postgres
+
 def save_to_database(df: pd.DataFrame):
     print("\nGuardando en la base de datos...")
 
@@ -102,7 +106,7 @@ def save_to_database(df: pd.DataFrame):
         df.to_sql(
             "btc_prices",
             engine,
-            if_exists="append", # no borra datos anteriores
+            if_exists="append",
             index=False,
             method='multi' # for better performance
         )
@@ -111,7 +115,7 @@ def save_to_database(df: pd.DataFrame):
         print(f"Error al guardar: {e}")
         raise
 
-# Get data from database
+
 def get_data_from_db(start_date:str, end_date:str) -> pd.DataFrame:
     query = """
     SELECT date, price_usd 
@@ -132,15 +136,14 @@ def train_and_predict(df: pd.DataFrame, future_days: int):
     model = LinearRegression()
     model.fit(X, y)
 
-    # Definir el rango de predicción
-
+    # Define date range
     X_future = np.arange(len(prices), len(prices) + future_days).reshape(-1, 1)
     predictions = model.predict(X_future)
 
     return predictions
 
 
-# -----------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
 
 def main():
     print("=" * 70)
@@ -148,7 +151,7 @@ def main():
     print("=" * 70)
     
     
-    # 1: OBTENER Y GUARDAR DATOS NUEVOS
+    # 1: GET NEW DATA FROM COINGECKO AND SAVE IN DB
     print("\nObtener datos nuevos de CoinGecko")
     print("-" * 70)
     
@@ -156,16 +159,14 @@ def main():
     fetch_start = input("  Fecha inicial (YYYY-MM-DD): ")
     fetch_end = input("  Fecha final (YYYY-MM-DD): ")
     
-    # Obtener datos de la API
     df_new = fetch_bitcoin_prices(fetch_start, fetch_end)
     print("\nPreview de los datos obtenidos:")
     print(df_new.head())
     
-    # Guardar en la base de datos
     save_to_database(df_new)
     
     
-    # 2: LEER DATOS DE LA DB Y PREDECIR
+    # 2: READ DATA FROM DB AND PREDICT
     print("\n" + "=" * 70)
     print("Predecir precios usando datos de la base de datos")
     print("-" * 70)
@@ -175,7 +176,6 @@ def main():
     train_start = input("  Fecha inicial (YYYY-MM-DD): ")
     train_end = input("  Fecha final (YYYY-MM-DD): ")
     
-    # LEER desde la base de datos
     df_train = get_data_from_db(train_start, train_end)
     
     if len(df_train) == 0:
@@ -208,6 +208,6 @@ def main():
 
 
 
-# EJECUTAR
+# RUN
 if __name__ == "__main__":
         main()
