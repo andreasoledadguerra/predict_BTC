@@ -78,22 +78,17 @@ def parse_price_data(data:dict) -> pd.DataFrame:
     return df
 
 # Get data from CoinGecko's API
-def fetch_date(start_date: str, end_date: str) -> pd.DataFrame:
-    
-    # CoinGecko endpoint for retrieving price data within a time rang
+def fetch_bitcoin_prices(start_date: str, end_date: str) -> pd.DataFrame:
+    start_ts, end_ts = convert_to_unix(start_date, end_date)
+    request_config = build_coingecko_request(start_ts, end_ts)
 
-    # Perform the API request
-  
-
-    df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
-    df["date"] = pd.to_datetime(df["timestamp_ms"], unit="ms").dt.date
-    df["asset"] = "BTC"
-    df = df[["date", "price_usd", "asset"]]
-    
-    print(f"{len(df)} registros obtenidos")
-
-    return df
-
+    print(f"Obteniendo datos desde {start_date} hasta {end_date}...")
+    raw_data = fetch_from_api(
+        request_config["url"],
+        request_config["params"],
+        request_config["headers"]
+    )
+        
 # Guardar en Postgres
 def save_to_database(df: pd.DataFrame):
     print("\nGuardando en la base de datos...")
