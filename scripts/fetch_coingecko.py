@@ -88,6 +88,11 @@ def fetch_bitcoin_prices(start_date: str, end_date: str) -> pd.DataFrame:
         request_config["params"],
         request_config["headers"]
     )
+
+    df = parse_price_data(raw_data)
+
+    print(f" {len(df)} registros obtenidos")
+    return df
         
 # Guardar en Postgres
 def save_to_database(df: pd.DataFrame):
