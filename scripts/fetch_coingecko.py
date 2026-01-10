@@ -73,7 +73,7 @@ def parse_price_data(data:dict) -> pd.DataFrame:
     df["asset"] = "BTC"
 
     # Reordenar columnas
-    df = df[["date", "proce_usd", "asset"]]
+    df = df[["date", "price_usd", "asset"]]
 
     return df
 
@@ -157,7 +157,7 @@ def main():
     fetch_end = input("  Fecha final (YYYY-MM-DD): ")
     
     # Obtener datos de la API
-    df_new = fetch_date(fetch_start, fetch_end)
+    df_new = fetch_bitcoin_prices(fetch_start, fetch_end)
     print("\nPreview de los datos obtenidos:")
     print(df_new.head())
     
