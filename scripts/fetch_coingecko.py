@@ -152,15 +152,15 @@ def main():
     
     
     # 1: GET NEW DATA FROM COINGECKO AND SAVE IN DB
-    print("\nObtener datos nuevos de CoinGecko")
+    print("\nFetch new data from CoinGecko")
     print("-" * 70)
     
-    print("\nIngrese el rango de fechas para DESCARGAR datos nuevos:")
-    fetch_start = input("  Fecha inicial (YYYY-MM-DD): ")
-    fetch_end = input("  Fecha final (YYYY-MM-DD): ")
+    print("\nEnter the date range to DOWNLOAD new data:")
+    fetch_start = input("  Start date (YYYY-MM-DD): ")
+    fetch_end = input("  End date (YYYY-MM-DD): ")
     
     df_new = fetch_bitcoin_prices(fetch_start, fetch_end)
-    print("\nPreview de los datos obtenidos:")
+    print("\nPreview of fetched data:")
     print(df_new.head())
     
     save_to_database(df_new)
@@ -168,42 +168,42 @@ def main():
     
     # 2: READ DATA FROM DB AND PREDICT
     print("\n" + "=" * 70)
-    print("Predecir precios usando datos de la base de datos")
+    print("Predict prices using database data")
     print("-" * 70)
     
-    print("\nIngrese el rango de fechas para ENTRENAR el modelo:")
-    print("(Puede ser el mismo rango u otro diferente)")
-    train_start = input("  Fecha inicial (YYYY-MM-DD): ")
-    train_end = input("  Fecha final (YYYY-MM-DD): ")
+    print("\nEnter the date rangeto TRAIN the model:")
+    print("(It can be the same range or a different one)")
+    train_start = input("  Start date (YYYY-MM-DD): ")
+    train_end = input("  End date (YYYY-MM-DD): ")
     
     df_train = get_data_from_db(train_start, train_end)
     
     if len(df_train) == 0:
-        print(" No hay datos en la base de datos para ese rango")
+        print(" NO data found in the database for the selected range")
         return
     
-    print("\nPreview de los datos de entrenamiento:")
+    print("\nPreview of training data:")
     print(df_train.head())
 
-    print(f"Registros usados para entrenar: {len(df_train)}")
+    print(f"Records used for training: {len(df_train)}")
     print(df_train.tail())
 
     try:
-        days_input = input("\nElija cuántos días quiere predecir (Si apreta Enter serán 10): ")
+        days_input = input("\nChoose how many days you want to predict(Press Enter for 10): ")
         future_days = int(days_input) if days_input.strip() else 10
     except ValueError:
-        print(" Entrada inválida, usando 10 días")
+        print(" Invalid input, using 10 days")
         future_days = 10
 
     predictions = train_and_predict(df_train, future_days)
 
-    print("\n Predicciones:")
+    print("\n Predictions:")
     for i, pred in enumerate(predictions, 1):
-        print(f"   Día {i}: ${pred:,.2f}")
+        print(f"   Day {i}: ${pred:,.2f}")
 
 
     print("\n" + "=" * 70)
-    print(" Proceso completado exitosamente")
+    print(" Process completed successfully")
     print("=" * 70)
 
 
