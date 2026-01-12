@@ -170,13 +170,14 @@ def make_predictions(model: LinearRegression, X_future: np.ndarray) -> np.ndarra
     return predictions
 
 # orchestrator function
-#def train_and_predict(df: pd.DataFrame) -> np.ndarray:
-#    X, y = prepare_training_data(df)       
-#    model = train_linear_model(X, y)        
-#    X_future = generate_future_data(n_current= int, n_future= int)    
-#    predictions = make_predictions(model, X_future)     
-#    return predictions
-# ---------------------------------------------------------------------------------------------
+def train_and_predict(df: pd.DataFrame) -> np.ndarray:
+    X, y = prepare_training_data(df)       
+    model = train_linear_model(X, y)        
+    X_future = generate_future_data(n_current= int, n_future= int)    
+    predictions = make_predictions(model, X_future)     
+    return predictions
+
+ #------------------------------------------------------------------------------------------
 
 def main():
     print("=" * 70)
