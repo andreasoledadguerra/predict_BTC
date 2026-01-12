@@ -153,8 +153,12 @@ def prepare_training_data(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
 def train_linear_model(X: np.ndarray, y: np.ndarray) -> LinearRegression:
     model = LinearRegression()
     model.fit(X, y)
-    
+
     return model
+
+def generate_future_data(n_current: int, n_future:int) -> np.ndarray:
+    X_future = np.arange(n_current, n_current + n_future).reshape(-1, 1)
+    return X_future
 
 # ---------------------------------------------------------------------------------------------
 
