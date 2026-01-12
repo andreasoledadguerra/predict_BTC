@@ -150,7 +150,11 @@ def prepare_training_data(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
 
     return X, y
 
-
+def train_linear_model(X: np.ndarray, y: np.ndarray) -> LinearRegression:
+    model = LinearRegression()
+    model.fit(X, y)
+    
+    return model
 
 # ---------------------------------------------------------------------------------------------
 
