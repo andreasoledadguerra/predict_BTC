@@ -176,8 +176,6 @@ def make_predictions(model: LinearRegression, X_future: np.ndarray) -> np.ndarra
 #    X_future = generate_future_data(n_current= int, n_future= int)    
 #    predictions = make_predictions(model, X_future)     
 #    return predictions
-
-
 # ---------------------------------------------------------------------------------------------
 
 def main():
