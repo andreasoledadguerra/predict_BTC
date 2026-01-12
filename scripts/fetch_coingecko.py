@@ -143,6 +143,14 @@ def get_data_from_db(start_date:str, end_date:str) -> pd.DataFrame:
 #
 #    return predictions
 
+def prepare_training_data(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+    prices = df["price_usd"].values
+    X = np.arange(len(prices)).reshape(-1, 1)
+    y = prices
+
+    return X, y
+
+
 
 # ---------------------------------------------------------------------------------------------
 
