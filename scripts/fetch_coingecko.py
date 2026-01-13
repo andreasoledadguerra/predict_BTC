@@ -252,7 +252,7 @@ def main():
     print(f"Entrenando modelo con {len(X)} datos...")
     model = train_linear_model(X, y )
 
-    X_future = generate_future_data(model, future_days)
+    X_future = generate_future_data(len(X), future_days)
     
 
 
