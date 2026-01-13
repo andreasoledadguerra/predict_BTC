@@ -1,5 +1,6 @@
 import requests
 from typing import Dict, Optional
+from datetime import datetime, timezone
 import time
 
 class CoinGeckoClient:
@@ -20,8 +21,8 @@ class CoinGeckoClient:
         currency: str = "usd"
     ) -> Dict:
         
-        start_ts = self._str_to_timestamp(start_date)
-        end_ts = self._self_str_to_timestamp(end_date)
+        start_ts = self.str_to_timestamp(start_date)
+        end_ts = self.str_to_timestamp(end_date)
 
         url = f"{self.BASE_URL}/coins/bitcoin/market_chart/range"
 
@@ -39,5 +40,11 @@ class CoinGeckoClient:
             timeout=self.timeout
         )
         response.raise_for_status()
-        
+
         return response.json()
+    
+
+    #def str_to_timestamp(self, date_str:str) -> int:
+    #dt = datetime.strptime(date_str, "%Y-%m-%d")
+    #dt = dt.replace(tzinfo=timezone.utc)
+    #return int(dt.timestamp())
