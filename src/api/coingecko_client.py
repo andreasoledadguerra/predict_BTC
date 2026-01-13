@@ -49,7 +49,10 @@ class CoinGeckoClient:
         dt = dt.replace(tzinfo=timezone.utc)
         return int(dt.timestamp())
     
+    
     def close(self):
         self.session.close()
+        
     
-    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
