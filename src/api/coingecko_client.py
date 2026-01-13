@@ -44,7 +44,7 @@ class CoinGeckoClient:
         return response.json()
     
 
-    #def str_to_timestamp(self, date_str:str) -> int:
-    #dt = datetime.strptime(date_str, "%Y-%m-%d")
-    #dt = dt.replace(tzinfo=timezone.utc)
-    #return int(dt.timestamp())
+    def str_to_timestamp(self, date_str:str) -> int:
+        dt = datetime.strptime(date_str, "%Y-%m-%d")
+        dt = dt.replace(tzinfo=timezone.utc)
+        return int(dt.timestamp())
