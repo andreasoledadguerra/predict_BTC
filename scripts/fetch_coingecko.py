@@ -230,29 +230,15 @@ def main():
         future_days = 10
 
 
-
-    #def prepare_training_data(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
-    #prices = df["price_usd"].values
-    #X = np.arange(len(prices)).reshape(-1, 1)
-    #y = prices
-
-    #return X, y
-
-
-    #def train_linear_model(X: np.ndarray, y: np.ndarray) -> LinearRegression:
-    #    model = LinearRegression()
-    #    model.fit(X, y)
-    #
-    #    return model
-
-
     X, y = prepare_training_data(df_train)
 
 
     print(f"Entrenando modelo con {len(X)} datos...")
     model = train_linear_model(X, y )
 
+
     X_future = generate_future_data(len(X), future_days)
+    
 
     predictions = make_predictions(model, X_future)
 
