@@ -248,11 +248,11 @@ def main():
     # Preparing data
     X, y = prepare_training_data(df_train)
 
-    #
-    #print(f"Entrenando modelo con {len(X)} datos...")
-    
+    # Train model
+    print(f"Entrenando modelo con {len(X)} datos...")
+    model = train_linear_model(X, y )
 
-    #model = train_linear_model(X, y )
+    
 #
     #predictions = make_predictions(model, df_train)
 #
