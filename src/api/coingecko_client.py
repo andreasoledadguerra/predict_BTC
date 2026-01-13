@@ -48,3 +48,8 @@ class CoinGeckoClient:
         dt = datetime.strptime(date_str, "%Y-%m-%d")
         dt = dt.replace(tzinfo=timezone.utc)
         return int(dt.timestamp())
+    
+    def close(self):
+        self.session.close()
+    
+    
