@@ -253,12 +253,10 @@ def main():
     model = train_linear_model(X, y )
 
     X_future = generate_future_data(len(X), future_days)
-    
+
+    predictions = make_predictions(model, X_future)
 
 
-#
-    #predictions = make_predictions(model, df_train)
-#
     print("\n Predictions:")
     for i, pred in enumerate(predictions, 1):
         print(f"   Day {i}: ${pred:,.2f}")
