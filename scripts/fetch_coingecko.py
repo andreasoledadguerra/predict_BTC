@@ -126,22 +126,6 @@ def get_data_from_db(start_date:str, end_date:str) -> pd.DataFrame:
     df = pd.read_sql(query, engine, params=(start_date, end_date))
     return df
 
-# Set data for regression
-
-#def train_and_predict(df: pd.DataFrame, future_days: int):
-#    prices = df["price_usd"].values
-#    X = np.arange(len(prices)).reshape(-1, 1)
-#    y = prices
-#
-#    # Training linear regression
-#    model = LinearRegression()
-#    model.fit(X, y)
-#
-#    # Define date range
-#    X_future = np.arange(len(prices), len(prices) + future_days).reshape(-1, 1)
-#    predictions = model.predict(X_future)
-#
-#    return predictions
 
 def prepare_training_data(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
     prices = df["price_usd"].values
