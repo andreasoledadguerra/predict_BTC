@@ -170,12 +170,12 @@ def make_predictions(model: LinearRegression, X_future: np.ndarray) -> np.ndarra
     return predictions
 
 # orchestrator function
-def train_and_predict(df: pd.DataFrame) -> np.ndarray:
-    X, y = prepare_training_data(df)       
-    model = train_linear_model(X, y)        
-    X_future = generate_future_data(n_current= int, n_future= int)    
-    predictions = make_predictions(model, X_future)     
-    return predictions
+#def train_and_predict(df: pd.DataFrame) -> np.ndarray:
+#    X, y = prepare_training_data(df)       
+#    model = train_linear_model(X, y)        
+#    X_future = generate_future_data(n_current= int, n_future= int)    
+#    predictions = make_predictions(model, X_future)     
+#    return predictions
 
  #------------------------------------------------------------------------------------------
 
@@ -229,8 +229,33 @@ def main():
         print(" Invalid input, using 10 days")
         future_days = 10
 
-    predictions = train_and_predict(df_train, future_days)
 
+
+    #def prepare_training_data(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+    #prices = df["price_usd"].values
+    #X = np.arange(len(prices)).reshape(-1, 1)
+    #y = prices
+
+    #return X, y
+
+
+    #def train_linear_model(X: np.ndarray, y: np.ndarray) -> LinearRegression:
+    #    model = LinearRegression()
+    #    model.fit(X, y)
+    #
+    #    return model
+
+    # Preparing data
+    X, y = prepare_training_data(df_train)
+
+    #
+    #print(f"Entrenando modelo con {len(X)} datos...")
+    
+
+    #model = train_linear_model(X, y )
+#
+    #predictions = make_predictions(model, df_train)
+#
     print("\n Predictions:")
     for i, pred in enumerate(predictions, 1):
         print(f"   Day {i}: ${pred:,.2f}")
