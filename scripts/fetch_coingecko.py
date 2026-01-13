@@ -245,14 +245,17 @@ def main():
     #
     #    return model
 
-    # Preparing data
+
     X, y = prepare_training_data(df_train)
 
-    # Train model
+
     print(f"Entrenando modelo con {len(X)} datos...")
     model = train_linear_model(X, y )
 
+    X_future = generate_future_data(model, future_days)
     
+
+
 #
     #predictions = make_predictions(model, df_train)
 #
