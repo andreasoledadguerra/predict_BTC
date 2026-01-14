@@ -13,6 +13,7 @@ class CoinGeckoClient:
         self.api_key = API_KEY
         self.timeout = timeout
         self.session = requests.Session()
+
         self.session.headers.update({"x-cg-demo-api-key": API_KEY})
 
 
@@ -30,23 +31,23 @@ class CoinGeckoClient:
             return config
 
 
-        #def _parse_price_data(self, data:dict) -> pd.DataFrame:
-#
-        #    if "prices" not in data:
-        #        raise ValueError ("La respuesta no contiene 'prices'")
-#
-        #    df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
-#
-        #    # Transformar timestamp a fecha (borrar)
-        #    df["date"] = pd.to_datetime(df["timestamp_ms"], unit="ms").dt.date
-#
-        #    # Agregar columna de activo
-        #    df["asset"] = "BTC"
-#
-        #    # Reordenar columnas
-        #    df = df[["date", "price_usd", "asset"]]
-#
-        #    return df
+        def _parse_price_data(self, data:dict) -> pd.DataFrame:
+
+            if "prices" not in data:
+                raise ValueError ("La respuesta no contiene 'prices'")
+
+            df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
+
+            # Transformar timestamp a fecha (borrar)
+            df["date"] = pd.to_datetime(df["timestamp_ms"], unit="ms").dt.date
+
+            # Agregar columna de activo
+            df["asset"] = "BTC"
+
+            # Reordenar columnas
+            df = df[["date", "price_usd", "asset"]]
+
+            return df
 #
 
        # url = f"{self.BASE_URL}/coins/bitcoin/market_chart/range"
