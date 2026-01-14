@@ -15,18 +15,18 @@ class CoinGeckoClient:
         self.session.headers.update({"x-cg-demo-api-key": API_KEY})
 
 
-        def build_coingecko_request(start_ts: int, end_ts: int) -> dict:
-            return {
-                "url":  "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range",
+        def _build_request_config(start_ts: int, end_ts: int) -> dict:
+            
+            config = {
+                "url":  f"{self.BASE_URL}/coins/bitcoin/market_chart/range",
                 "params": {      
                     "vs_currency": "usd",
                     "from": start_ts,
                     "to": end_ts
-                },                         
-                "headers": {
-                    "x-cg-demo-api-key": API_KEY
                 }
-    }
+            }
+        
+            return config
 
 
        # url = f"{self.BASE_URL}/coins/bitcoin/market_chart/range"
