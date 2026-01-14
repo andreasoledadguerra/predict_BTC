@@ -51,7 +51,7 @@ class CoinGeckoClient:
             df = df[["date", "price_usd", "asset"]]
 
             return df
-#
+
 
        # url = f"{self.BASE_URL}/coins/bitcoin/market_chart/range"
 
@@ -61,27 +61,55 @@ class CoinGeckoClient:
        #     "to": end_ts
        # } 
 
-        time.sleep(1) #basic rate limiting
+        #time.sleep(1) #basic rate limiting
 
-        response = self.session.get(
-            url,
-            params=params,
-            timeout=self.timeout
-        )
-        response.raise_for_status()
+        #response = self.session.get(
+        #    url,
+        #    params=params,
+        #    timeout=self.timeout
+        #)
+        #response.raise_for_status()
 
-        return response.json()
+        #return response.json()
     
 
-    def str_to_timestamp(self, date_str:str) -> int:
-        dt = datetime.strptime(date_str, "%Y-%m-%d")
-        dt = dt.replace(tzinfo=timezone.utc)
-        return int(dt.timestamp())
-    
-    
-    def close(self):
-        self.session.close()
+        def str_to_timestamp(self, date_str:str) -> int:
+            dt = datetime.strptime(date_str, "%Y-%m-%d")
+            dt = dt.replace(tzinfo=timezone.utc)
+            return int(dt.timestamp())
+
+
+        def close(self):
+            self.session.close()
+
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            self.close()
+
         
+        def fetch_bitcoin_prices(self, start_date: str, end_date: str) -> pd.DataFrame:
+
+            self.logger.info(f"Getting data from {start_date} to {end_date}...")
+
+            start_ts, end_ts = DateConverter.convert_to_unix(start_date, end_date)
+
+            request_config = self._build_request_config(start_ts, end_ts)
+
+            time.sleep(1)
     
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+            response = self.session.get(
+                request_config["url"],
+                params=request_config["params"],
+                timeout=30
+                
+            )
+            response.raise_for_status()
+
+            raw_data = response.json()
+
+            df = self._parse_price_data(raw_data)
+
+            self.logger.info(f" {len(df)} obtained records")
+            return df
+        
+        
