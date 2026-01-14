@@ -115,4 +115,8 @@ class CoinGeckoClient:
             return df
         
 
+        def close(self):
+            self.session.close()
         
+        def __exit__(self, exc_tye, exc_val, exc_tb):
+            self.close()
