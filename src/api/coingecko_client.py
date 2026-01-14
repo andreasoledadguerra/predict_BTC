@@ -1,8 +1,11 @@
 import requests
 import pandas as pd
+import time
+
 from typing import Dict, Optional
 from datetime import datetime, timezone
-import time
+from src.utils.date_converter import DateConverter
+
 
 class CoinGeckoClient:
 
