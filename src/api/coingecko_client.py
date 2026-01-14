@@ -14,23 +14,28 @@ class CoinGeckoClient:
         self.session = requests.Session()
         self.session.headers.update({"x-cg-demo-api-key": API_KEY})
 
-    def get_bitcoin_range(
-        self,
-        start_date: str,
-        end_date: str,
-        currency: str = "usd"
-    ) -> Dict:
-        
-        start_ts = self.str_to_timestamp(start_date)
-        end_ts = self.str_to_timestamp(end_date)
 
-        url = f"{self.BASE_URL}/coins/bitcoin/market_chart/range"
+        def build_coingecko_request(start_ts: int, end_ts: int) -> dict:
+            return {
+                "url":  "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range",
+                "params": {      
+                    "vs_currency": "usd",
+                    "from": start_ts,
+                    "to": end_ts
+                },                         
+                "headers": {
+                    "x-cg-demo-api-key": API_KEY
+                }
+    }
 
-        params = {
-            "vs_currency": currency,
-            "from": start_ts,
-            "to": end_ts
-        } 
+
+       # url = f"{self.BASE_URL}/coins/bitcoin/market_chart/range"
+
+       # params = {
+       #     "vs_currency": currency,
+       #     "from": start_ts,
+       #     "to": end_ts
+       # } 
 
         time.sleep(1) #basic rate limiting
 
