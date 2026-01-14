@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 import time
+#import logging
 
 from typing import Dict, Optional
 from datetime import datetime, timezone
@@ -14,6 +15,7 @@ class CoinGeckoClient:
     def __init__(self, API_KEY, timeout):
 
         self.api_key = API_KEY
+        #self.logger = logging.getLogger(__name__)
         self.timeout = timeout
         self.session = requests.Session()
 
@@ -112,4 +114,5 @@ class CoinGeckoClient:
             self.logger.info(f" {len(df)} obtained records")
             return df
         
+
         
