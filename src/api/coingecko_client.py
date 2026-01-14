@@ -1,7 +1,7 @@
 import requests
 import pandas as pd
 import time
-#import logging
+import logging
 
 from typing import Dict, Optional
 from datetime import datetime, timezone
