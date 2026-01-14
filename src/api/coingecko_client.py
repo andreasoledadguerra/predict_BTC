@@ -15,7 +15,7 @@ class CoinGeckoClient:
     def __init__(self, API_KEY, timeout):
 
         self.api_key = API_KEY
-        #self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
         self.timeout = timeout
         self.session = requests.Session()
 
