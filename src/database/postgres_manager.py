@@ -106,4 +106,8 @@ class DatabaseManager:
             conn.close()
 
 
-    
+    def close(self):
+
+        if self._engine:
+            self._engine.dispose()
+            self.logger.info("Connection to database closed")
