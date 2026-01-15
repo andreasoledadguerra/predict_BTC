@@ -42,3 +42,24 @@ class DatabaseManager:
                 self.logger.error(f"Error connecting to PostgreSQL: {e}")
                 raise
         return self._engine
+    
+
+    def save_btc_prices(self, df:pd.DataFrame, table_name: str = "btc_prices") -> int:
+
+        try:
+            df.to_sql(
+                table_name,
+                self.engine,
+                if_exists="append",
+                index=False,
+                method='multi',
+                chunksize=1000
+            )
+
+            records_saved = len(df)
+            self.logger.info(f"{records_saved} saved record in {table_name}")
+            return records_saved
+        
+        except Exception as e:
+            self.logger.error(f"Error saving in database: {e}")
+            raise
