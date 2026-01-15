@@ -24,6 +24,21 @@ class DatabaseManager:
         self._engine = None
         self.logger = logging.getLogger(__name__)
     
+    @property
+    def engine(self):
 
+        if self._engine is None:
+            connection_string = (
+                f"postgresql+psycopg2://{self.user}:{self.password}"
+                f"@{self.host}:{self.port}/{self.database}"
+            )
+            try:
+                self._engine = create_engine(connection_string)
 
-
+                with self._engine.connect() as conn:
+                    conn.execute(text("SELECT 1"))
+                self.logger.info(f"Conected to {self.database} in {self.host}: {self.port}")
+            except Exception as e:
+                self.logger.error(f"Error connecting to PostgreSQL: {e}")
+                raise
+        return self._engine
