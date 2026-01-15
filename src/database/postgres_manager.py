@@ -57,9 +57,38 @@ class DatabaseManager:
             )
 
             records_saved = len(df)
-            self.logger.info(f"{records_saved} saved record in {table_name}")
+            self.logger.info(f"{records_saved} saved records in {table_name}")
             return records_saved
         
         except Exception as e:
             self.logger.error(f"Error saving in database: {e}")
             raise
+
+    def get_btc_prices(
+        self,
+        start_date: str,
+        end_date: str,
+        table_name: str = "btc_prices"
+    ) -> pd.DataFrame:
+        
+        query = text(f"""
+        SELECT date, price_usd 
+        FROM {table_name} 
+        WHERE date BETWEEN :start_date AND :end_date 
+        ORDER BY date
+        """)
+
+        try:
+            df = pd.read_sql(
+                query,
+                self.engine,
+                params={"start_date": start_date, "end_date": end_date}
+            )
+            self.logger.info(f"{len(df)} data obtained from {table_name}")
+            return df
+        
+        except Exception as e:
+            self.logger.error(f"Database read permission error: {e}")
+            raise
+
+        
