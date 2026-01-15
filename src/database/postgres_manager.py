@@ -90,5 +90,20 @@ class DatabaseManager:
         except Exception as e:
             self.logger.error(f"Database read permission error: {e}")
             raise
-
         
+
+    @contextmanager
+    def get_connection(self):
+
+        conn = self.engine.connect()
+        try:
+            yield conn
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+
+    
