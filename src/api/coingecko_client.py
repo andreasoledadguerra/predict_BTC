@@ -8,8 +8,8 @@ from datetime import datetime, timezone
 from src.utils.date_converter import DateConverter
 
 
-class CoinGeckoClient:
 
+class CoinGeckoClient:
     BASE_URL = "https://api.coingecko.com/api/v3"
 
     def __init__(self, API_KEY, timeout):
@@ -53,26 +53,6 @@ class CoinGeckoClient:
             df = df[["date", "price_usd", "asset"]]
 
             return df
-
-
-       # url = f"{self.BASE_URL}/coins/bitcoin/market_chart/range"
-
-       # params = {
-       #     "vs_currency": currency,
-       #     "from": start_ts,
-       #     "to": end_ts
-       # } 
-
-        #time.sleep(1) #basic rate limiting
-
-        #response = self.session.get(
-        #    url,
-        #    params=params,
-        #    timeout=self.timeout
-        #)
-        #response.raise_for_status()
-
-        #return response.json()
     
 
         def str_to_timestamp(self, date_str:str) -> int:
