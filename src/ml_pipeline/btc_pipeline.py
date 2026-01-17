@@ -10,5 +10,18 @@ class BTCPredictor:
 
         self.model = model or LinearRegression()
         self.logger = logging.getLogger(__name__)
-        self.is_trained = False
+        self.is_trained = False 
         self.training_size = 0 
+    
+
+    def prepare_training_data(self, df: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
+
+        prices = df["price_usd"].values
+        X = np.arange(len(prices)).reshape(-1, 1)
+        y = prices
+
+        self.training_size = len(X)
+        self.logger.info(f"Prepared data: {self.training_size} samples")
+        return X, y
+    
+    
