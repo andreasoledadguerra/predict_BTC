@@ -24,4 +24,12 @@ class BTCPredictor:
         self.logger.info(f"Prepared data: {self.training_size} samples")
         return X, y
     
-    
+    def train(self, X: np.nddarray, y: np.ndarray) -> None:
+
+        self.logger.info(f" Training model with {len(X)} datos...")
+        self.model.fit(X, y)
+        self.is_trained = True
+
+        #
+        score = self.model.score(X, y)
+        self.logger.info(f"Trained model. R² score: {score:.4f}")
