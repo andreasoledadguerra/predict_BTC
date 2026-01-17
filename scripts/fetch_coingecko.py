@@ -12,34 +12,43 @@ from sqlalchemy import create_engine
 # Load variables defined in the .env file into the environment (delete)
 load_dotenv()
 
+
+
 # Retireve the Postgres environment variables (delete)
 POSTGRES_USER= os.getenv("POSTGRES_USER")
 POSTGRES_PASSWORD= os.getenv("POSTGRES_PASSWORD")
 POSTGRES_DB= os.getenv("POSTGRES_DB")
 POSTGRES_PORT= os.getenv("POSTGRES_PORT")
 
+
+
 # Retrieve the CoinGecko API key from environment variables(delete)
 API_KEY = os.getenv("COINGECKO_API_KEY")
 
-# Create conection to database(delete)
+
+
+# Create conection to database(delete) - Used in class DatabaseManager
 engine = create_engine(
     f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{POSTGRES_DB}"
 )
 
 
+# Used in class DateConverter (date_converter.py)
 def str_to_timestamp(date_str:str) -> int:
     dt = datetime.strptime(date_str, "%Y-%m-%d")
     dt = dt.replace(tzinfo=timezone.utc)
     return int(dt.timestamp())
 
 
-# Convert date string to timestamp Unix
+
+# Convert date string to timestamp Unix(class DateConverter)
 def convert_to_unix(start_date:str, end_date: str) -> tuple[int, int]:
     start_ts = str_to_timestamp(start_date)
     end_ts =str_to_timestamp(end_date)
     return start_ts, end_ts
 
 
+# Used refactored in class CoinGeckoClient
 def build_coingecko_request(start_ts: int, end_ts: int) -> dict:
     return {
         "url":  "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range",
@@ -63,6 +72,8 @@ def fetch_from_api(url: str, params: dict, headers: dict) -> dict:
     return response.json() # Parse the JSON response into a Python dictionary
 
 
+
+# Used in class CoinGeckoClient
 def parse_price_data(data:dict) -> pd.DataFrame:
 
     if "prices" not in data:
@@ -98,7 +109,7 @@ def fetch_bitcoin_prices(start_date: str, end_date: str) -> pd.DataFrame:
     print(f" {len(df)} registros obtenidos")
     return df
         
-
+# It's in class DatabaseManager as save_btc_prices()
 def save_to_database(df: pd.DataFrame):
     print("\nGuardando en la base de datos...")
 
@@ -115,7 +126,7 @@ def save_to_database(df: pd.DataFrame):
         print(f"Error al guardar: {e}")
         raise
 
-
+# It's in class DatabaseManager as get_btc_prices()
 def get_data_from_db(start_date:str, end_date:str) -> pd.DataFrame:
     query = """
     SELECT date, price_usd 
