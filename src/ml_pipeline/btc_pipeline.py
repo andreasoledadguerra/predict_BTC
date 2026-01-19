@@ -30,6 +30,20 @@ class BTCPredictor:
         self.model.fit(X, y)
         self.is_trained = True
 
-        #
+        # “Returns a number that measures how well the model predicts.”
         score = self.model.score(X, y)
         self.logger.info(f"Trained model. R² score: {score:.4f}")
+
+        def predict_future(self, n_days:int) -> np.ndarray:
+
+            x_future = np.arange(
+                self.training_size,
+                self.training_size + n_days
+            ).reshape(-1,1)
+
+            predictions = self.model.predict(x_future)
+
+            self.logger.info(f"{n_days} predicciones generadas")
+            return predictions
+        
+        
