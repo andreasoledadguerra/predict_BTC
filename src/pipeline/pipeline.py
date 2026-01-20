@@ -10,3 +10,28 @@ from database.postgres_manager import DatabaseManager
 from ml.btc_predictor import BTCPredictor
 
 
+class BTCDataPipeline:
+
+    def __init__(self, 
+                 api_client: CoinGeckoClient,
+                 db_manager: DatabaseManager,
+                 predictor: BTCPredictor,
+                 ):
+                
+                self.api_client = api_client
+                self.db_manager = db_manager
+                self.predictor = predictor
+                self.logger = logging.getLogger(__name__)
+
+        
+    def fetch_and_save_data(
+        self,
+        start_date: str,
+        end_date: str
+    ) -> Dict[str, Any]:
+        self.logger.info(f"Fetching data: {start_date} to {end_date} ")
+        df_new = self.api_client.fetch_bitcoin_prices(start_date, end_date)
+        records_saved = self.db_manager.save_btc_prices(df_new)
+        return records_saved
+
+    
