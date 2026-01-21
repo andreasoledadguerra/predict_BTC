@@ -29,7 +29,7 @@ class BTCDataPipeline:
         start_date: str,
         end_date: str
     ) -> pd.DataFrame:
-        self.logger.info(f"Fetching data: {start_date} to {end_date} ")
+        self.logger.info(f"Fetching data: {start_date} to {end_date} to CoinGecko API...")
         df_new = self.api_client.fetch_bitcoin_prices(start_date, end_date)
         return df_new
 
