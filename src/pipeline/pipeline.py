@@ -34,19 +34,27 @@ class BTCDataPipeline:
         return df_new
 
     def save_data_in_db(
-                self,
-                df_new: pd.DataFrame
+        self,
+        df_new: pd.DataFrame
     ) -> Dict[str, Any]:
         self.logger.info(f"Saving data in database...")
+
         records_saved = self.db_manager.save_btc_prices(df_new)
         return records_saved
 
 
-    def train_and_predict(
+    def train_data(
         self,
         train_start_date: str,
         train_end_date: str,
-        predict_days: int = 10
-    ) -> Dict[str, Any]:
-           
+        #predict_days: int = 10
+    ) -> pd.DataFrame:
+        self.logger.info(f"Retrieving training data from PostgreSQL..")
+
+        df_train = self.db_manager.get_btc_prices(
+          train_start_date,
+          train_end_date,
+        )
+        return df_train
     
+
