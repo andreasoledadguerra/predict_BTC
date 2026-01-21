@@ -33,8 +33,11 @@ class BTCDataPipeline:
         df_new = self.api_client.fetch_bitcoin_prices(start_date, end_date)
         return df_new
 
-    
-
+    def save_data_in_db(
+                self,
+                df_new: pd.DataFrame
+    ) -> Dict[str, Any]:
+        self.logger.info(f"Saving data in database...")
         records_saved = self.db_manager.save_btc_prices(df_new)
         return records_saved
 
