@@ -47,7 +47,7 @@ class BTCDataPipeline:
         self,
         train_start_date: str,
         train_end_date: str,
-        #predict_days: int = 10
+        
     ) -> pd.DataFrame:
         self.logger.info(f"Retrieving training data from PostgreSQL..")
 
@@ -58,3 +58,13 @@ class BTCDataPipeline:
         return df_train
     
 
+#    def predict_training_data(
+#        self,
+#        train_start_date: str,
+#        train_end_date: str,
+#        predict_days: int = 10
+#    ) -> Dict[str, Any]:
+  
+
+          
+          
