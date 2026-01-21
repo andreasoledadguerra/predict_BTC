@@ -24,14 +24,26 @@ class BTCDataPipeline:
                 self.logger = logging.getLogger(__name__)
 
         
-    def fetch_and_save_data(
+    def fetch_data(
         self,
         start_date: str,
         end_date: str
-    ) -> Dict[str, Any]:
+    ) -> pd.DataFrame:
         self.logger.info(f"Fetching data: {start_date} to {end_date} ")
         df_new = self.api_client.fetch_bitcoin_prices(start_date, end_date)
+        return df_new
+
+    
+
         records_saved = self.db_manager.save_btc_prices(df_new)
         return records_saved
 
+
+    def train_and_predict(
+        self,
+        train_start_date: str,
+        train_end_date: str,
+        predict_days: int = 10
+    ) -> Dict[str, Any]:
+           
     
