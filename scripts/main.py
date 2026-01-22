@@ -46,13 +46,12 @@ def initialize_components(env_vars):
 def run_stage1_fetch(pipeline):
     """
     Execute STAGE 1: Get data from CoinGecko and save to DB.
-
     """
     print("\n" + "=" * 60)
     print(" STAGE 1: FETCH DATA FROM COINGECKO")
     print("=" * 60)
     
-    print("\n💡 INSTRUCTIONS:")
+    print("\n INSTRUCTIONS:")
     print("   - Maximum 90 days for CoinGecko free API")
     print("   - Data will be saved to PostgreSQL")
     print("   - Run this FIRST before making predictions")
@@ -70,4 +69,45 @@ def run_stage1_fetch(pipeline):
 
     print(f" SUCCESS: {result['records_saved']} records saved")
 
+
+
+def run_stage2_train_predict(pipeline):
+    """
+    Execute STAGE 2: Get data from DB, train model and predict.
+    """
+
+    print("\n" + "=" * 60)
+    print(" STAGE 2: TRAIN MODEL AND PREDICT")
+    print("=" * 60)
+
+    print("\n Enter date range to TRAIN the model:")
+    print("   (Must be within the available range)")
+
+    train_start = input(" Start date (YYYY-MM-DD): ").strip()
+    train_end = input(" End date (YYYY-MM-DD): ").strip()
+
+    print(f"\n Checking data for {train_start} to {train_end}...")
+    has_data = pipeline.validate_date_range_in_db(train_start, train_end)
+
+    days_input = input("\n How many days do you want to predict? (10): ").strip()
+    predict_days = int(days_input) if days_input else 10
+
+    print(f"\n Training model with data from {train_start} to {train_end}...")
+    print(f" Predicting {predict_days} days into the future...")
+
+    result = pipeline.execute_stage2_train_and_predict(train_start, train_end, predict_days)
+
+    print("\n" + "=" * 60)
+    print(" STAGE 2 RESULTS")
+    print("=" * 60)
+
+    print(f" SUCCESS: Model trained and {predict_days} predictions generated")
+
+    print(f"\n PREDICTIONS FOR THE NEXT {predict_days} DAYS:")
     
+    predictions = result.get("predictions", [])
+    
+
+    return predictions
+
+# ================================= 
