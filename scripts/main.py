@@ -149,3 +149,8 @@ def main():
         print(" Database connection closed")
 
     print("\n Program finished")
+
+# ========================== EXECUTION ============================
+
+if __name__ == "__main__":
+    main()
