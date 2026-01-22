@@ -60,14 +60,6 @@ class CoinGeckoClient:
             dt = dt.replace(tzinfo=timezone.utc)
             return int(dt.timestamp())
 
-
-        def close(self):
-            self.session.close()
-
-
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            self.close()
-
         
         def fetch_bitcoin_prices(self, start_date: str, end_date: str) -> pd.DataFrame:
 
