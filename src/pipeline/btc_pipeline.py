@@ -43,7 +43,7 @@ class BTCDataPipeline:
         return records_saved
 
 
-    def train_data(
+    def get_data_for_training(
         self,
         train_start_date: str,
         train_end_date: str,
