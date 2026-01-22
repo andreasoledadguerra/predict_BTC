@@ -74,7 +74,7 @@ class CoinGeckoClient:
             response = self.session.get(
                 request_config["url"],
                 params=request_config["params"],
-                timeout=30
+                timeout=self.timeout
                 
             )
             response.raise_for_status()
