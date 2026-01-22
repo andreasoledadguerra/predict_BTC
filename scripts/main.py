@@ -110,4 +110,42 @@ def run_stage2_train_predict(pipeline):
 
     return predictions
 
-# ================================= 
+# =============================== MAIN FUNCTION =================================================
+
+def main():
+    print("=" * 60)
+    print("BITCOIN PRICE PREDICTOR")
+    print("=" * 60)
+
+
+    env_vars = load_dotenv()
+
+    # Initialize components
+    pipeline, db_manager = initialize_components(env_vars)
+
+    while True:
+        print("\n" + "=" * 60)
+        print(" MAIN MENU")
+        print("=" * 60)
+        print("\nSelect an option:")
+        print("   1️⃣  STAGE 1: Fetch data from CoinGecko and save to DB")
+        print("   2️⃣  STAGE 2: Train model and predict (using DB data)")
+        print("   3️⃣  Exit")
+
+        choice = input("\n   Your choice (1-4): ").strip()
+
+        if choice == "1":
+              run_stage1_fetch(pipeline)
+        elif choice == "2":
+            run_stage2_train_predict(pipeline)
+        elif choice == "3":
+            print("\n👋 Thank you for using Bitcoin Price Predictor!")
+            break
+        else:
+              print("❌ Invalid option. Please choose 1-4.")
+    
+    if db_manager:
+        db_manager.close()
+        print(" Database connection closed")
+
+    print("\n Program finished")
