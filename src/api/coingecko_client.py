@@ -12,7 +12,7 @@ from src.utils.date_converter import DateConverter
 class CoinGeckoClient:
     BASE_URL = "https://api.coingecko.com/api/v3"
 
-    def __init__(self, API_KEY, timeout):
+    def __init__(self, API_KEY: str, timeout: int):
 
         self.api_key = API_KEY
         self.logger = logging.getLogger(__name__)
