@@ -27,7 +27,7 @@ API_KEY = os.getenv("COINGECKO_API_KEY")
 def initialize_components(env_vars):
 
     #api_client = CoinGeckoClient(api_key=os.getenv["COINGECKO_API_KEY"])
-    api_client =CoinGeckoClient(api_key= API_KEY)
+    api_client =CoinGeckoClient(API_KEY= API_KEY, timeout=10 )
 
     db_manager = DatabaseManager(
         user=env_vars["POSTGRES_USER"],
