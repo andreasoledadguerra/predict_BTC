@@ -24,7 +24,7 @@ class BTCPredictor:
         self.logger.info(f"Prepared data: {self.training_size} samples")
         return X, y
     
-    def train(self, X: np.nddarray, y: np.ndarray) -> None:
+    def train(self, X: np.ndarray, y: np.ndarray) -> None:
 
         self.logger.info(f" Training model with {len(X)} datos...")
         self.model.fit(X, y)
