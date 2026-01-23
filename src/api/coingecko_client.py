@@ -22,7 +22,7 @@ class CoinGeckoClient:
         self.session.headers.update({"x-cg-demo-api-key": API_KEY})
 
 
-        def _build_request_config(self,start_ts: int, end_ts: int) -> dict:
+        def build_request_config(self,start_ts: int, end_ts: int) -> dict:
             
             config = {
                 "url":  f"{self.BASE_URL}/coins/bitcoin/market_chart/range",
@@ -36,7 +36,7 @@ class CoinGeckoClient:
             return config
 
 
-        def _parse_price_data(self, data:dict) -> pd.DataFrame:
+        def parse_price_data(self, data:dict) -> pd.DataFrame:
 
             if "prices" not in data:
                 raise ValueError ("La respuesta no contiene 'prices'")
