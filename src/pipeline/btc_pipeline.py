@@ -68,14 +68,14 @@ class BTCDataPipeline:
         predict_days: int = 10
     ) -> Dict[str, Any]:
         self.logger.info(f"Preparing data for prediction...")
-        X, y = self.btc_predictor.prepare_training_data(df_train)
+        X, y = self.predictor.prepare_training_data(df_train)
 
         self.logger.info(f"Training linear regression model...")
         self.btc_predictor.train(X, y)
           
     
         self.logger.info(f" Generating predictions from {train_start_date} to {train_end_date}")
-        predictions = self.btc_predictor.predict_future(predict_days)
+        predictions = self.predictor.predict_future(predict_days)
         predictions = predictions.tolist()
     
         return predictions
