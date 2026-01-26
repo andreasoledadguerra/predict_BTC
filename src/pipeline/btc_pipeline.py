@@ -3,6 +3,8 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, Tuple
 import pandas as pd
+import inspect
+
 
 
 from ..api.coingecko_client import CoinGeckoClient
