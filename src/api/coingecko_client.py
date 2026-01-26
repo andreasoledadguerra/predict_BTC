@@ -65,7 +65,7 @@ class CoinGeckoClient:
         )
         response.raise_for_status()
         raw_data = response.json()
-        df = self._parse_price_data(raw_data)
+        df = self.parse_price_data(raw_data)
         self.logger.info(f" {len(df)} obtained records")
         return df
     
