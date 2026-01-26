@@ -74,7 +74,7 @@ def run_stage1_fetch(pipeline):
     print(" STAGE 1 RESULTS")
     print("-" * 40)
 
-    print(f" SUCCESS: {result_save['records_saved']} records saved")
+    print(f" SUCCESS: {result_save} records saved")
 
 
 
@@ -136,7 +136,7 @@ def main():
         print("   2️⃣  STAGE 2: Train model and predict (using DB data)")
         print("   3️⃣  Exit")
 
-        choice = input("\n   Your choice (1-4): ").strip()
+        choice = input("\n   Your choice (1-3): ").strip()
 
         if choice == "1":
               run_stage1_fetch(pipeline)
