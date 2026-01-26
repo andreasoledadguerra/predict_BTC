@@ -71,7 +71,7 @@ class BTCDataPipeline:
         X, y = self.predictor.prepare_training_data(df_train)
 
         self.logger.info(f"Training linear regression model...")
-        self.btc_predictor.train(X, y)
+        self.predictor.train(X, y)
           
     
         self.logger.info(f" Generating predictions from {train_start_date} to {train_end_date}")
