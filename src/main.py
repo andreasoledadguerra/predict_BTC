@@ -121,7 +121,7 @@ def main():
     print("=" * 60)
 
     # Initialize components
-    pipeline, db_manager = initialize_components(env_vars)
+    pipeline, db_manager = initialize_components()
 
     while True:
         print("\n" + "=" * 60)
