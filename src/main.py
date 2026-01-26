@@ -64,13 +64,17 @@ def run_stage1_fetch(pipeline):
     fetch_start = input(" Start date (YYYY-MM-DD): ").strip()
     fetch_end = input(" End date (YYYY-MM-DD): ").strip()
 
-    result = pipeline.execute_stage1_fetch_and_save(fetch_start, fetch_end)
+    #result = pipeline.execute_stage1_fetch_and_save(fetch_start, fetch_end)
+    result_fetch = pipeline.fetch_data(fetch_start, fetch_end)
+
+    result_save =pipeline.save_data_in_db(result_fetch)
+
 
     print("\n" + "-" * 40)
     print(" STAGE 1 RESULTS")
     print("-" * 40)
 
-    print(f" SUCCESS: {result['records_saved']} records saved")
+    print(f" SUCCESS: {result_save['records_saved']} records saved")
 
 
 
