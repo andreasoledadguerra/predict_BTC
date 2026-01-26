@@ -15,26 +15,27 @@ from .pipeline.btc_pipeline import BTCDataPipeline
 load_dotenv()
 
 # Retrieve the Postgres environment variables (delete)
-POSTGRES_USER= os.getenv("POSTGRES_USER")
-POSTGRES_PASSWORD= os.getenv("POSTGRES_PASSWORD")
-POSTGRES_DB= os.getenv("POSTGRES_DB")
-POSTGRES_PORT= os.getenv("POSTGRES_PORT")
-
-# Retrieve the CoinGecko API key from environment variables(delete)
-API_KEY = os.getenv("COINGECKO_API_KEY")
+#POSTGRES_USER= os.getenv("POSTGRES_USER")
+#POSTGRES_PASSWORD= os.getenv("POSTGRES_PASSWORD")
+#POSTGRES_DB= os.getenv("POSTGRES_DB")
+#POSTGRES_PORT= os.getenv("POSTGRES_PORT")
+#
+## Retrieve the CoinGecko API key from environment variables(delete)
+#API_KEY = os.getenv("COINGECKO_API_KEY")
 
 
 # ====================================== SETTING =================================================
-def initialize_components(env_vars):
+def initialize_components():
+    pg_settings = get_postgres_settings()
+    cg_settings = get_coingecko_settings()
 
-    #api_client = CoinGeckoClient(api_key=os.getenv["COINGECKO_API_KEY"])
-    api_client =CoinGeckoClient(API_KEY= API_KEY, timeout=10 )
+    api_client =CoinGeckoClient(API_KEY=cg_settings.API_KEY, timeout=10 )
 
     db_manager = DatabaseManager(
-        user=POSTGRES_USER,
-        password=POSTGRES_PASSWORD,
-        database=POSTGRES_DB,
-        port=POSTGRES_PORT
+        user=pg_settings.user,
+        password=pg_settings.password,
+        database=pg_settings.database,
+        port=pg_settings.port
     )
 
     predictor = BTCPredictor()
