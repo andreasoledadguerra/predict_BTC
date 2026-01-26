@@ -14,3 +14,14 @@ class PostgresSettings:
 @dataclass(frozen=True)
 class CoinGeckoSettings:
     API_KEY:str
+
+# seguir con los métodos de PostgresSettings y CoinGeckoSettings
+
+def get_postgres_settings() -> PostgresSettings:
+    return PostgresSettings(
+        user=os.getenv("POSTGRES_USER"),
+        password=os.getenv("POSTGRES_PASSWORD"),
+        database=os.getenv("POSTGRES_DB"),
+        port=int(os.getenv("POSTGRES_PORT", 5433)),
+    )
+
