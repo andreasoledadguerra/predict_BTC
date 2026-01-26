@@ -94,7 +94,7 @@ def run_stage2_train_predict(pipeline):
     train_end = input(" End date (YYYY-MM-DD): ").strip()
 
     print(f"\n Checking data for {train_start} to {train_end}...")
-    has_data = pipeline.validate_date_range_in_db(train_start, train_end)
+    has_data = pipeline.get_data_for_training(train_start, train_end)
 
     days_input = input("\n How many days do you want to predict? (10): ").strip()
     predict_days = int(days_input) if days_input else 10
@@ -102,7 +102,7 @@ def run_stage2_train_predict(pipeline):
     print(f"\n Training model with data from {train_start} to {train_end}...")
     print(f" Predicting {predict_days} days into the future...")
 
-    result = pipeline.execute_stage2_train_and_predict(train_start, train_end, predict_days)
+    result = pipeline.predict_training_data(has_data, train_start, train_end, predict_days)
 
     print("\n" + "=" * 60)
     print(" STAGE 2 RESULTS")
