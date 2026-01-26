@@ -54,7 +54,7 @@ class CoinGeckoClient:
     def fetch_bitcoin_prices(self, start_date: str, end_date: str) -> pd.DataFrame:
         self.logger.info(f"Getting data from {start_date} to {end_date}...")
         start_ts, end_ts = DateConverter.convert_to_unix(start_date, end_date)
-        request_config = self._build_request_config(start_ts, end_ts)
+        request_config = self.build_request_config(start_ts, end_ts)
         time.sleep(1)
 
         response = self.session.get(
