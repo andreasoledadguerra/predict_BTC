@@ -120,9 +120,6 @@ def main():
     print("BITCOIN PRICE PREDICTOR")
     print("=" * 60)
 
-
-    env_vars = load_dotenv()
-
     # Initialize components
     pipeline, db_manager = initialize_components(env_vars)
 
