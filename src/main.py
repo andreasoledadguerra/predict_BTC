@@ -102,7 +102,6 @@ def run_stage2_train_predict(pipeline):
     print(f"\n Training model with data from {train_start} to {train_end}...")
     print(f" Predicting {predict_days} days into the future...")
 
-    #result = pipeline.predict_training_data(has_data, train_start, train_end, predict_days)
     predictions = pipeline.predict_training_data(has_data, train_start, train_end, predict_days)
 
 
@@ -113,8 +112,6 @@ def run_stage2_train_predict(pipeline):
     print(f" SUCCESS: Model trained and {predict_days} predictions generated")
 
     print(f"\n PREDICTIONS FOR THE NEXT {predict_days} DAYS:")
-    
-    #predictions = result.get("predictions", [])
     
     for i, p in enumerate(predictions, start=1):
         print(f" Day +{i}: {p:.2f}")
