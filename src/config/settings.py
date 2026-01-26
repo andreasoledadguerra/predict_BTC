@@ -25,3 +25,7 @@ def get_postgres_settings() -> PostgresSettings:
         port=int(os.getenv("POSTGRES_PORT", 5433)),
     )
 
+def get_coingecko_settings() -> CoinGeckoSettings:
+    return CoinGeckoSettings(
+        API_KEY=os.getenv("COINGECKO_API_KEY")
+    )

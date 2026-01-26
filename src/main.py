@@ -30,10 +30,10 @@ def initialize_components(env_vars):
     api_client =CoinGeckoClient(API_KEY= API_KEY, timeout=10 )
 
     db_manager = DatabaseManager(
-        user=env_vars["POSTGRES_USER"],
-        password=env_vars["POSTGRES_PASSWORD"],
-        database=env_vars["POSTGRES_DB"],
-        port=env_vars["POSTGRES_PORT"]
+        user=POSTGRES_USER,
+        password=POSTGRES_PASSWORD,
+        database=POSTGRES_DB,
+        port=POSTGRES_PORT
     )
 
     predictor = BTCPredictor()
