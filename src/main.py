@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 from dotenv import load_dotenv
 
-from config.settings import get_postgres_settings, get_coingecko_settings
+from .config.settings import get_postgres_settings, get_coingecko_settings
 
 from .api.coingecko_client import CoinGeckoClient
 from .database.postgres_manager import DatabaseManager
