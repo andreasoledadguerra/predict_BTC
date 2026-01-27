@@ -8,7 +8,6 @@ from datetime import datetime, timezone
 from src.utils.date_converter import DateConverter
 
 
-
 class CoinGeckoClient:
     BASE_URL = "https://api.coingecko.com/api/v3"
 
@@ -34,6 +33,8 @@ class CoinGeckoClient:
         }
     
         return config
+    
+
     def parse_price_data(self, data:dict) -> pd.DataFrame:
         if "prices" not in data:
             raise ValueError ("La respuesta no contiene 'prices'")
@@ -46,11 +47,13 @@ class CoinGeckoClient:
         df = df[["date", "price_usd", "asset"]]
         return df
 
+
     def str_to_timestamp(self, date_str:str) -> int:
         dt = datetime.strptime(date_str, "%Y-%m-%d")
         dt = dt.replace(tzinfo=timezone.utc)
         return int(dt.timestamp())
     
+
     def fetch_bitcoin_prices(self, start_date: str, end_date: str) -> pd.DataFrame:
         self.logger.info(f"Getting data from {start_date} to {end_date}...")
         start_ts, end_ts = DateConverter.convert_to_unix(start_date, end_date)
@@ -69,8 +72,10 @@ class CoinGeckoClient:
         self.logger.info(f" {len(df)} obtained records")
         return df
     
+
     def close(self):
         self.session.close()
+    
     
     def __exit__(self, exc_tye, exc_val, exc_tb):
         self.close()
