@@ -15,8 +15,6 @@ class PostgresSettings:
 class CoinGeckoSettings:
     API_KEY:str
 
-# seguir con los métodos de PostgresSettings y CoinGeckoSettings
-
 def get_postgres_settings() -> PostgresSettings:
     return PostgresSettings(
         user=os.getenv("POSTGRES_USER"),
