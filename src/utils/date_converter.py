@@ -14,8 +14,3 @@ class DateConverter:
         start_ts = DateConverter.str_to_timestamp(start_date)
         end_ts =DateConverter.str_to_timestamp(end_date)
         return start_ts, end_ts
-    
-    #@staticmethod
-    #def timestamp_to_date(timestamp_ms: int) -> datetime:
-    #    """Convierte timestamp en ms a datetime."""
-    #    return datetime.fromtimestamp(timestamp_ms / 1000, timezone.utc)
