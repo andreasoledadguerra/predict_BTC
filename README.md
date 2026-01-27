@@ -80,12 +80,16 @@ Follow the on-screen instructions to:
 
 ## Project Structure
 
-- `app/` : Core application logic
-- `app/db/` : Database-related files and persisted data
-- `app/models.py` : Data models and prediction logic
+- `src/` : Core application logic
+- `src/api`: A client for fetching historical Bitcoin price data from the CoinGecko API.
+- `src/db/` : Database-related files and persisted data
+- `src/ml/` : Data models and prediction logic
+- `src/config`: Settings manager for database and API configurations using environment variables.
+- `src/pipeline`: Data pipeline class
+- `src/utils`: Utility for converting human-readable dates to Unix timestamps used by APIs.
 - `docker/` : Docker-related configuration
 - `docker/env/` : Docker environment variables
-- `scripts/fetch_coingecko.py` : CLI script to fetch data and run predictions
+- `src/main.py` : CLI script to fetch data and run predictions
 - `.env` : Environment variables (not committed)
 - `docker-compose.yml` : Docker services definition (database)
 - `.gitignore` : Git ignore rules
