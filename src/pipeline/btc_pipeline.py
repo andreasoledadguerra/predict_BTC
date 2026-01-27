@@ -3,9 +3,6 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, Tuple
 import pandas as pd
-import inspect
-
-
 
 from ..api.coingecko_client import CoinGeckoClient
 from ..database.postgres_manager import DatabaseManager
@@ -35,6 +32,7 @@ class BTCDataPipeline:
         df_new = self.api_client.fetch_bitcoin_prices(start_date, end_date)
         return df_new
 
+    
     def save_data_in_db(
         self,
         df_new: pd.DataFrame
