@@ -4,6 +4,7 @@ import logging
 from sklearn.linear_model import LinearRegression
 from typing import Tuple, Optional, List
 
+
 class BTCPredictor:
 
     def __init__(self, model: Optional[LinearRegression] = None):
@@ -23,7 +24,8 @@ class BTCPredictor:
         self.training_size = len(X)
         self.logger.info(f"Prepared data: {self.training_size} samples")
         return X, y
-    
+
+
     def train(self, X: np.ndarray, y: np.ndarray) -> None:
 
         self.logger.info(f" Training model with {len(X)} datos...")
@@ -33,6 +35,7 @@ class BTCPredictor:
         # “Returns a number that measures how well the model predicts.”
         score = self.model.score(X, y)
         self.logger.info(f"Trained model. R² score: {score:.4f}")
+
 
     def predict_future(self, n_days:int) -> np.ndarray:
         x_future = np.arange(
