@@ -11,18 +11,8 @@ from .database.postgres_manager import DatabaseManager
 from .ml.btc_predictor import BTCPredictor
 from .pipeline.btc_pipeline import BTCDataPipeline
 
-# Load variables defined in the .env file into the environment (delete)
+
 load_dotenv()
-
-# Retrieve the Postgres environment variables (delete)
-#POSTGRES_USER= os.getenv("POSTGRES_USER")
-#POSTGRES_PASSWORD= os.getenv("POSTGRES_PASSWORD")
-#POSTGRES_DB= os.getenv("POSTGRES_DB")
-#POSTGRES_PORT= os.getenv("POSTGRES_PORT")
-#
-## Retrieve the CoinGecko API key from environment variables(delete)
-#API_KEY = os.getenv("COINGECKO_API_KEY")
-
 
 # ====================================== SETTING =================================================
 def initialize_components():
@@ -64,7 +54,6 @@ def run_stage1_fetch(pipeline):
     fetch_start = input(" Start date (YYYY-MM-DD): ").strip()
     fetch_end = input(" End date (YYYY-MM-DD): ").strip()
 
-    #result = pipeline.execute_stage1_fetch_and_save(fetch_start, fetch_end)
     result_fetch = pipeline.fetch_data(fetch_start, fetch_end)
 
     result_save =pipeline.save_data_in_db(result_fetch)
@@ -118,7 +107,7 @@ def run_stage2_train_predict(pipeline):
 
     return predictions
 
-# =============================== MAIN FUNCTION =================================================
+# ================================== MAIN FUNCTION =================================================
 
 def main():
     print("=" * 60)
@@ -155,7 +144,7 @@ def main():
 
     print("\n Program finished")
 
-# ========================== EXECUTION ============================
+# ========================================= EXECUTION ===========================================
 
 if __name__ == "__main__":
     main()
