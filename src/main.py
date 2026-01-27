@@ -103,7 +103,7 @@ def run_stage2_train_predict(pipeline):
     print(f"\n PREDICTIONS FOR THE NEXT {predict_days} DAYS:")
     
     for i, p in enumerate(predictions, start=1):
-        print(f" Day +{i}: {p:.2f}")
+        print(f" Day {i}: {p:.2f}")
 
     return predictions
 
