@@ -16,7 +16,7 @@ class CoinGeckoClient:
         self.api_key = API_KEY
         self.logger = logging.getLogger(__name__)
         self.timeout = timeout
-        self.session = requests.Session()
+        self.session = requests.Session() #instead requests.get()
 
         self.session.headers.update({"x-cg-demo-api-key": API_KEY})
 
@@ -54,7 +54,7 @@ class CoinGeckoClient:
 
 
     def str_to_timestamp(self, date_str:str) -> int:
-        
+
         dt = datetime.strptime(date_str, "%Y-%m-%d")
         dt = dt.replace(tzinfo=timezone.utc)
         return int(dt.timestamp())
