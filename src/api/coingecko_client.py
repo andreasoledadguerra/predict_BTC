@@ -35,25 +35,33 @@ class CoinGeckoClient:
     
 
     def parse_price_data(self, data:dict) -> pd.DataFrame:
+
         if "prices" not in data:
             raise ValueError ("La respuesta no contiene 'prices'")
+        
         df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
+
         # Transformar timestamp a fecha (borrar)
         df["date"] = pd.to_datetime(df["timestamp_ms"], unit="ms").dt.date
+
         # Agregar columna de activo
         df["asset"] = "BTC"
+
         # Reordenar columnas
         df = df[["date", "price_usd", "asset"]]
+
         return df
 
 
     def str_to_timestamp(self, date_str:str) -> int:
+        
         dt = datetime.strptime(date_str, "%Y-%m-%d")
         dt = dt.replace(tzinfo=timezone.utc)
         return int(dt.timestamp())
     
 
     def fetch_bitcoin_prices(self, start_date: str, end_date: str) -> pd.DataFrame:
+
         self.logger.info(f"Getting data from {start_date} to {end_date}...")
         start_ts, end_ts = DateConverter.convert_to_unix(start_date, end_date)
         request_config = self.build_request_config(start_ts, end_ts)
