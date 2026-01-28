@@ -21,7 +21,7 @@ The application is designed as an end-to-end data pipeline, covering data acquis
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/predict_BTC.git
+   git clone https://github.com/andreasoledadguerra/predict_BTC.git
    cd predict_BTC
    ```
 
