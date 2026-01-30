@@ -84,5 +84,6 @@ class CoinGeckoClient:
         self.session.close()
     
     
+    # Context manager
     def __exit__(self, exc_tye, exc_val, exc_tb):
         self.close()
