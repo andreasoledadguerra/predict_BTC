@@ -3,7 +3,7 @@ import pandas as pd
 import time
 import logging
 
-from typing import Dict, Optional
+from typing import dict
 from datetime import datetime, timezone
 from src.utils.date_converter import DateConverter
 
