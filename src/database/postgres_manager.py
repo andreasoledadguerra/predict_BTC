@@ -25,6 +25,8 @@ class DatabaseManager:
         self._engine = None # Lazy initialization
         self.logger = logging.getLogger(__name__)
     
+    
+    # Controlled access to the database engine
     @property
     def engine(self):
 
