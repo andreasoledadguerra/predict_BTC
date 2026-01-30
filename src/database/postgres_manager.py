@@ -22,7 +22,7 @@ class DatabaseManager:
         self.database = database 
         self.host = host
         self.port = port 
-        self._engine = None
+        self._engine = None # Lazy initialization
         self.logger = logging.getLogger(__name__)
     
     @property
