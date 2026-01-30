@@ -41,13 +41,10 @@ class CoinGeckoClient:
         
         df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
 
-        # Transformar timestamp a fecha (borrar)
         df["date"] = pd.to_datetime(df["timestamp_ms"], unit="ms").dt.date
 
-        # Agregar columna de activo
         df["asset"] = "BTC"
 
-        # Reordenar columnas
         df = df[["date", "price_usd", "asset"]]
 
         return df
