@@ -37,7 +37,7 @@ class CoinGeckoClient:
     def parse_price_data(self, data:dict) -> pd.DataFrame:
 
         if "prices" not in data:
-            raise ValueError ("La respuesta no contiene 'prices'")
+            raise ValueError ("The response does not contain the expected 'prices' field.")
         
         df = pd.DataFrame(data["prices"], columns=["timestamp_ms", "price_usd"])
 
