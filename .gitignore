@@ -1,5 +1,3 @@
 .env
 env/
 __pycache__/
-
-COINGECKO_API_KEY=CG-NyXrzgZdT4T2GjjWBxZuv7jQcd
