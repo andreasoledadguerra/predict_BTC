@@ -22,10 +22,7 @@ def initialize_components():
     api_client =CoinGeckoClient(API_KEY=cg_settings.API_KEY, timeout=10 )
 
     db_manager = DatabaseManager(
-        user=pg_settings.user,
-        password=pg_settings.password,
-        database=pg_settings.database,
-        port=pg_settings.port
+      settings= pg_settings
     )
 
     predictor = BTCPredictor()

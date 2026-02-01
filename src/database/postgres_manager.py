@@ -6,22 +6,16 @@ from sqlalchemy import create_engine,text
 from typing import Dict, Any
 from contextlib import contextmanager
 
+from src.config.settings import PostgresSettings
+
 class DatabaseManager:
 
     def __init__(
             self,
-            user: str,
-            password: str,
-            database: str,
-            host: str = "localhost",
-            port: str = "5433"
-    ):
+            settings: PostgresSettings
+        ):
         
-        self.user = user
-        self.password = password 
-        self.database = database 
-        self.host = host
-        self.port = port 
+        self.settings = settings 
         self._engine = None # Lazy initialization
         self.logger = logging.getLogger(__name__)
     
@@ -31,10 +25,7 @@ class DatabaseManager:
     def engine(self):
 
         if self._engine is None:
-            connection_string = (
-                f"postgresql+psycopg2://{self.user}:{self.password}"
-                f"@{self.host}:{self.port}/{self.database}"
-            )
+            connection_string = self.settings.get_connection_string()
             try:
                 self._engine = create_engine(connection_string)
 
