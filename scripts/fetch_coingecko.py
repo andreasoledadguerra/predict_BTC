@@ -2,12 +2,18 @@ import os
 import requests
 import pandas as pd
 import numpy as np
+import logging
 
 from datetime import datetime, timezone
 from typing import Tuple
 from sklearn.linear_model import LinearRegression
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
+
+
+
+logger = logging.getLogger(__name__)
+
 
 # Load variables defined in the .env file into the environment (delete)
 load_dotenv()
@@ -97,7 +103,7 @@ def fetch_bitcoin_prices(start_date: str, end_date: str) -> pd.DataFrame:
     start_ts, end_ts = convert_to_unix(start_date, end_date)
     request_config = build_coingecko_request(start_ts, end_ts)
 
-    print(f"Obteniendo datos desde {start_date} hasta {end_date}...")
+    logger.info(f"Obteniendo datos desde {start_date} hasta {end_date}...")
     raw_data = fetch_from_api(
         request_config["url"],
         request_config["params"],
@@ -106,12 +112,12 @@ def fetch_bitcoin_prices(start_date: str, end_date: str) -> pd.DataFrame:
 
     df = parse_price_data(raw_data)
 
-    print(f" {len(df)} registros obtenidos")
+    logger.info(f" {len(df)} registros obtenidos")
     return df
         
 # It's in class DatabaseManager as save_btc_prices()
 def save_to_database(df: pd.DataFrame):
-    print("\nGuardando en la base de datos...")
+    logger.info("\nGuardando en la base de datos...")
 
     try:
         df.to_sql(
@@ -121,9 +127,9 @@ def save_to_database(df: pd.DataFrame):
             index=False,
             method='multi' # for better performance
         )
-        print(f" {len(df)} registros guardados exitosamente")
+        logger.info(f" {len(df)} registros guardados exitosamente")
     except Exception as e:
-        print(f"Error al guardar: {e}")
+        logger.info(f"Error al guardar: {e}")
         raise
 
 # It's in class DatabaseManager as get_btc_prices()
@@ -167,60 +173,60 @@ def make_predictions(model: LinearRegression, X_future: np.ndarray) -> np.ndarra
 # ------------------------------------------------------------------------------------------
 
 def main():
-    print("=" * 70)
-    print("BITCOIN PRICE PREDICTOR")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("BITCOIN PRICE PREDICTOR")
+    logger.info("=" * 70)
     
     
     # 1: GET NEW DATA FROM COINGECKO AND SAVE IN DB
-    print("\nFetch new data from CoinGecko")
-    print("-" * 70)
+    logger.info("\nFetch new data from CoinGecko")
+    logger.info("-" * 70)
     
-    print("\nEnter the date range to DOWNLOAD new data:")
+    logger.info("\nEnter the date range to DOWNLOAD new data:")
     fetch_start = input("  Start date (YYYY-MM-DD): ")
     fetch_end = input("  End date (YYYY-MM-DD): ")
     
     df_new = fetch_bitcoin_prices(fetch_start, fetch_end)
-    print("\nPreview of fetched data:")
-    print(df_new.head())
+    logger.info("\nPreview of fetched data:")
+    logger.info(df_new.head())
     
     save_to_database(df_new)
     
     
     # 2: READ DATA FROM DB AND PREDICT
-    print("\n" + "=" * 70)
-    print("Predict prices using database data")
-    print("-" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("Predict prices using database data")
+    logger.info("-" * 70)
     
-    print("\nEnter the date rangeto TRAIN the model:")
-    print("(It can be the same range or a different one)")
+    logger.info("\nEnter the date rangeto TRAIN the model:")
+    logger.info("(It can be the same range or a different one)")
     train_start = input("  Start date (YYYY-MM-DD): ")
     train_end = input("  End date (YYYY-MM-DD): ")
     
     df_train = get_data_from_db(train_start, train_end)
     
     if len(df_train) == 0:
-        print(" NO data found in the database for the selected range")
+        logger.info(" NO data found in the database for the selected range")
         return
     
-    print("\nPreview of training data:")
-    print(df_train.head())
+    logger.info("\nPreview of training data:")
+    logger.info(df_train.head())
 
-    print(f"Records used for training: {len(df_train)}")
-    print(df_train.tail())
+    logger.info(f"Records used for training: {len(df_train)}")
+    logger.info(df_train.tail())
 
     try:
         days_input = input("\nChoose how many days you want to predict(Press Enter for 10): ")
         future_days = int(days_input) if days_input.strip() else 10
     except ValueError:
-        print(" Invalid input, using 10 days")
+        logger.info(" Invalid input, using 10 days")
         future_days = 10
 
 
     X, y = prepare_training_data(df_train)
 
 
-    print(f"Entrenando modelo con {len(X)} datos...")
+    logger.info(f"Entrenando modelo con {len(X)} datos...")
     model = train_linear_model(X, y )
 
 
@@ -230,14 +236,14 @@ def main():
     predictions = make_predictions(model, X_future)
 
 
-    print("\n Predictions:")
+    logger.info("\n Predictions:")
     for i, pred in enumerate(predictions, 1):
-        print(f"   Day {i}: ${pred:,.2f}")
+        logger.info(f"   Day {i}: ${pred:,.2f}")
 
 
-    print("\n" + "=" * 70)
-    print(" Process completed successfully")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info(" Process completed successfully")
+    logger.info("=" * 70)
 
 
 
