@@ -3,7 +3,7 @@ import pandas as pd
 import time
 import logging
 
-from typing import dict
+from typing import Dict
 from datetime import datetime, timezone
 from src.utils.date_converter import DateConverter
 
@@ -21,7 +21,7 @@ class CoinGeckoClient:
         self.session.headers.update({"x-cg-demo-api-key": API_KEY})
 
 
-    def build_request_config(self,start_ts: int, end_ts: int) -> dict:        
+    def build_request_config(self,start_ts: int, end_ts: int) -> Dict:        
         config = {
             "url":  f"{self.BASE_URL}/coins/bitcoin/market_chart/range",
             "params": {      
