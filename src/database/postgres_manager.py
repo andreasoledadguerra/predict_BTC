@@ -31,7 +31,7 @@ class DatabaseManager:
 
                 with self._engine.connect() as conn:
                     conn.execute(text("SELECT 1"))
-                self.logger.info(f"Conected to {self.database} in {self.host}: {self.port}")
+                self.logger.info(f"Conected to {self.settings.database} in {self.settings.host}: {self.settings.port}")
             except Exception as e:
                 self.logger.error(f"Error connecting to PostgreSQL: {e}")
                 raise
