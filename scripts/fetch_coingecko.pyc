@@ -32,7 +32,7 @@ POSTGRES_PORT=     os.getenv("POSTGRES_PORT")
 
 # Define the time range for the API request
 
-print(" Ingrese el rango de fechas (YYYY-MM-DD)")
+logger.info(" Ingrese el rango de fechas (YYYY-MM-DD)")
 start_date_input = input("Fecha inicial: ")
 end_date_input = input("Fecha final: ")
 
@@ -76,12 +76,12 @@ data = response.json()
 data = response.json()
     
     # ========== AGREGAR ESTAS LÍNEAS DE DEBUG ==========
-    print("\n" + "="*60)
-    print("🔍 DEBUG - Respuesta de la API:")
-    print(f"Status Code: {response.status_code}")
-    print(f"Keys en respuesta: {list(data.keys())}")
-    print(f"Respuesta completa: {data}")
-    print("="*60 + "\n")
+    logger.info("\n" + "="*60)
+    logger.info("🔍 DEBUG - Respuesta de la API:")
+    logger.info(f"Status Code: {response.status_code}")
+    logger.info(f"Keys en respuesta: {list(data.keys())}")
+    logger.info(f"Respuesta completa: {data}")
+    logger.info("="*60 + "\n")
     
     # Verificar si hay error
     if "error" in data:
@@ -104,21 +104,21 @@ df = df.drop(columns="timestamp_ms")
 df["date"] = df["date"].dt.date
 df["asset"] = "BTC"
 df = df[["date", "price_usd", "asset"]]
-print(f"Datos obtenidos: {len(df)} registros")
-print(df.head())
+logger.info(f"Datos obtenidos: {len(df)} registros")
+logger.info(df.head())
 
 # ------------------------------------------------------------------------------
 #Test connection
-print("\nProbando conexión a PostgresSQL...")
+logger.info("\nProbando conexión a PostgresSQL...")
 try: 
     with engine.connect() as conn:
         conn.execute(text("SELECT 1"))
-        print("Conexión exitosa a PostgreSQL")
+        logger.info("Conexión exitosa a PostgreSQL")
 except Exception as e:
-    print(f"Error de conexión: {e}")
+    logger.info(f"Error de conexión: {e}")
 
 # Guardar en Postgres
-print("\nGuardando en la base de datos...") 
+logger.info("\nGuardando en la base de datos...") 
 try:
     df.to_sql(
         "btc_prices",
@@ -127,6 +127,6 @@ try:
         index=False,
         method='multi' # for better performance
     )
-    print(f" {len(df)} registros guardados exitosamente")
+    logger.info(f" {len(df)} registros guardados exitosamente")
 except Exception as e:
-    print(f"Error al guardar: {e}")
+    logger.info(f"Error al guardar: {e}")
