@@ -46,6 +46,7 @@ class CoinGeckoClient:
         df["asset"] = "BTC"
 
         df = df[["date", "price_usd", "asset"]]
+        
 
         return df
 
