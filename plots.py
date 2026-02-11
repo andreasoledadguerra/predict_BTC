@@ -48,17 +48,12 @@ class BTCPlotter:
     def train(self):
         return self.btc_predictor.train()
     
+    
     def predict_future(self):
         return self.btc_predictor.predict_future()
     
     
-    #def plot_real_price(self, df: pd.DataFrame):
-    #    return self.pipeline.fetch_data()
-    
     def plot_real_prices(self, df: pd.DataFrame, title: str = "Precios Reales BTC") -> str:
- 
-        #if df.empty or 'date' not in df.columns or 'price_usd' not in df.columns:
-            #raise ValueError("DataFrame debe tener 'date' y 'price_usd'")
         
         fig, ax = plt.subplots(figsize=(12, 6))
         
@@ -319,19 +314,6 @@ class BTCPlotter:
     def plot_all(self,
                 df_real: pd.DataFrame,
                 n_days_future: int = 10) -> dict:
-        """
-        Genera los TRES plots y devuelve rutas
-        
-        Returns:
-            Dict con rutas de los archivos generados
-        """
-
-        #return {
-        #    'real': self.plot_real_prices(df_real),
-        #    'linear': self.plot_model_lr(df_real, n_days_future),
-        #    'ridge': self.plot_model_ridge(df_real, n_days_future)
-        #}
-
 
         plot_paths = {}
 
