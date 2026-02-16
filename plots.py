@@ -71,26 +71,7 @@ class BTCPlotter:
         n_days_future: int,
         **model_kwargs
     ) -> Dict:
-        """
-        Train a model and generate predictions.
-        
-        Args:
-            df: Historical data DataFrame
-            model_type: 'linear' or 'ridge'
-            n_days_future: Number of days to predict
-            **model_kwargs: Additional model parameters (e.g., alpha for Ridge)
-        
-        Returns:
-            Dictionary containing:
-                - X: Training features
-                - y: Training targets
-                - predictions: Future predictions
-                - r2_score: Model R² score
-                - future_dates: DatetimeIndex for predictions
-                - model_name: Human-readable model name
-                - last_date: Last date in historical data
-                - predictor: Trained predictor instance
-        """
+
         # Select and configure model
         if model_type == 'linear':
             predictor = BTCPredictor()
