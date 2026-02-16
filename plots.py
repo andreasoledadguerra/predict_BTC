@@ -136,19 +136,7 @@ class BTCPlotter:
         filename: str,
         title_suffix: str = ""
     ) -> str:
-        """
-        Generate standardized plot: historical data + predictions + metrics.
-        
-        Args:
-            df: DataFrame with historical data
-            model_data: Dictionary returned by _train_and_predict()
-            color: Color for prediction line
-            filename: Output PNG filename
-            title_suffix: Additional text for title
-        
-        Returns:
-            Path to saved plot file
-        """
+   
         # Unpack model data
         y = model_data['y']
         y_pred_train = model_data['y_pred_train']
@@ -252,3 +240,19 @@ class BTCPlotter:
         
         print(f"✅ Plot saved: {filepath}")
         return filepath
+
+def plot_model_lr(
+        self, 
+        df: pd.DataFrame, 
+        n_days_future: int
+    ) -> str:
+
+        print(f"\n📊 Training Linear Regression model...")
+        model_data = self._train_and_predict(df, 'linear', n_days_future)
+        
+        return self._plot_prediction_with_metrics(
+            df=df,
+            model_data=model_data,
+            color=self.colors['linear'],
+            filename="btc_linear_comparison.png"
+        )
