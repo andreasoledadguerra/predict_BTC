@@ -241,18 +241,108 @@ class BTCPlotter:
         print(f"✅ Plot saved: {filepath}")
         return filepath
 
-def plot_model_lr(
-        self, 
-        df: pd.DataFrame, 
-        n_days_future: int
-    ) -> str:
-
-        print(f"\n📊 Training Linear Regression model...")
-        model_data = self._train_and_predict(df, 'linear', n_days_future)
+    def plot_model_lr(
+            self, 
+            df: pd.DataFrame, 
+            n_days_future: int
+        ) -> str:
+    
+            print(f"\n📊 Training Linear Regression model...")
+            model_data = self._train_and_predict(df, 'linear', n_days_future)
+            
+            return self._plot_prediction_with_metrics(
+                df=df,
+                model_data=model_data,
+                color=self.colors['linear'],
+                filename="btc_linear_comparison.png"
+            )
+    
+    def plot_model_ridge(
+            self, 
+            df: pd.DataFrame, 
+            n_days_future: int,
+            alpha: float = 1.0
+        ) -> str:
+            """
+            Generate plot for Ridge Regression model.
+            
+            Creates individual plot: "Real Price vs Ridge Regression Prediction"
+            
+            Args:
+                df: Historical data DataFrame
+                n_days_future: Number of days to predict
+                alpha: Regularization parameter (L2 penalty)
+            
+            Returns:
+                Path to saved PNG file
+            """
+    
+            model_data = self._train_and_predict(
+                df, 'ridge', n_days_future, alpha=alpha
+            )
+            suffix= f" | α={alpha} "
+            
+            return self._plot_prediction_with_metrics(
+                df=df,
+                model_data=model_data,
+                color=self.colors['ridge'],
+                filename="btc_ridge_comparison.png",
+                title_suffix=suffix
+            )
+    
+    
+    def plot_all(
+        self,
+        df_real: pd.DataFrame,
+        n_days_future: int = 10,
+        alpha: float = 1.0
+    ) -> Dict[str, str]:
+        """
+        Generate all plots: linear model, ridge model, and comparison.
         
-        return self._plot_prediction_with_metrics(
-            df=df,
-            model_data=model_data,
-            color=self.colors['linear'],
-            filename="btc_linear_comparison.png"
-        )
+        Args:
+            df_real: Historical data DataFrame
+            n_days_future: Number of days to predict
+            alpha: Ridge regularization parameter
+        
+        Returns:
+            Dictionary mapping plot types to file paths:
+                - 'linear': Linear regression plot
+                - 'ridge': Ridge regression plot
+                - 'comparison': Comparison plot
+        """
+        
+        plot_paths = {}
+        
+        # Plot 1: Linear Regression
+        try:
+            print("\n[2/4] Plotting Linear Regression model...")
+            plot_paths['linear'] = self.plot_model_lr(df_real, n_days_future)
+        except Exception as e:
+            print(f"❌ Error in plot_model_lr: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        # Plot 2: Ridge model
+        try:
+            print("\n[3/4] Plotting Ridge Regression model...")
+            plot_paths['ridge'] = self.plot_model_ridge(df_real, n_days_future, alpha)
+        except Exception as e:
+            print(f"❌ Error in plot_model_ridge: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        # Plot 4: Comparison 
+        #try:
+        #    print("\n[4/4] Plotting model comparison...")
+        #    plot_paths['comparison'] = self.plot_comparison(df_real, n_days_future, alpha)
+        #except Exception as e:
+        #    print(f"❌ Error in plot_comparison: {e}")
+        #    import traceback
+        #    traceback.print_exc()
+        
+        print("\n" + "="*60)
+        print(f"✅ COMPLETED: {len(plot_paths)}/2 plots generated successfully")
+        print("="*60)
+        
+        return plot_paths
