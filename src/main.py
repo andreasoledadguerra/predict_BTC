@@ -261,87 +261,6 @@ def run_stage2_train_predict(pipeline: BTCDataPipeline, plotter: BTCPlotter):
     return predictions
 
 
-# ====================================== STAGE 3: VISUALIZE ONLY =====================================================
-
-def run_stage3_visualize_only(pipeline: BTCDataPipeline, plotter: BTCPlotter):
-    """
-    Execute STAGE 3: Generate plots from existing data without re-training.
-    
-    Useful for:
-    - Regenerating plots with different parameters
-    - Creating comparison plots
-    - Adjusting visualization settings
-    
-    Args:
-        pipeline: BTCDataPipeline instance
-        plotter: BTCPlotter instance
-    """
-    logger.info("\n" + "=" * 60)
-    logger.info("📊 STAGE 3: VISUALIZE EXISTING DATA")
-    logger.info("=" * 60)
-
-    logger.info("\n📋 This stage allows you to generate plots without re-training")
-    logger.info("   Useful for regenerating visualizations with different settings")
-
-    # ---- GET DATE RANGE ----
-    logger.info("\n📅 Enter date range for visualization:")
-    train_start = input("   Start date (YYYY-MM-DD): ").strip()
-    train_end = input("   End date (YYYY-MM-DD): ").strip()
-
-    try:
-        datetime.strptime(train_start, "%Y-%m-%d")
-        datetime.strptime(train_end, "%Y-%m-%d")
-    except ValueError:
-        logger.error("❌ Invalid date format. Please use YYYY-MM-DD")
-        return
-
-    # ---- LOAD DATA ----
-    logger.info(f"\n🔍 Loading data from {train_start} to {train_end}...")
-    
-    try:
-        df_data = pipeline.get_data_for_training(train_start, train_end)
-        
-        if df_data is None or len(df_data) == 0:
-            logger.error("❌ No data found for the specified date range")
-            return
-        
-        logger.info(f"✅ Loaded {len(df_data)} records")
-        
-    except Exception as e:
-        logger.error(f"❌ Error loading data: {e}")
-        return
-
-    # ---- GET VISUALIZATION PARAMETERS ----
-    days_input = input("\n🔮 Days to predict (default: 10): ").strip()
-    predict_days = int(days_input) if days_input and days_input.isdigit() else 10
-
-    alpha_input = input("🎛️  Ridge alpha (default: 1.0): ").strip()
-    alpha = float(alpha_input) if alpha_input else 1.0
-
-    # ---- GENERATE PLOTS ----
-    logger.info("\n📊 Generating visualizations...")
-    
-    try:
-        plotter.df = df_data
-        
-        plot_paths = plotter.plot_all(
-            df_real=df_data,
-            n_days_future=predict_days,
-            alpha=alpha
-        )
-        
-        logger.info("\n✅ Plots generated successfully:")
-        for model_type, path in plot_paths.items():
-            logger.info(f"   📈 {model_type.upper()}: {path}")
-        
-        logger.info("\n💡 Plots saved in the 'plots/' directory")
-        
-    except Exception as e:
-        logger.error(f"❌ Error generating plots: {e}")
-        import traceback
-        logger.debug(traceback.format_exc())
-
-
 # ====================================== MAIN MENU =================================================
 
 def display_menu():
@@ -352,8 +271,7 @@ def display_menu():
     logger.info("\nSelect an option:")
     logger.info("   1️⃣  STAGE 1: Fetch data from CoinGecko → Save to DB")
     logger.info("   2️⃣  STAGE 2: Train models → Predict → Generate plots")
-    logger.info("   3️⃣  STAGE 3: Visualize existing data (no training)")
-    logger.info("   4️⃣  EXIT")
+    logger.info("   3️⃣  EXIT")
 
 
 def main():
@@ -382,7 +300,7 @@ def main():
     while True:
         display_menu()
         
-        choice = input("\n   Your choice (1-4): ").strip()
+        choice = input("\n   Your choice (1-3): ").strip()
 
         if choice == "1":
             run_stage1_fetch(pipeline)
@@ -390,17 +308,17 @@ def main():
         elif choice == "2":
             run_stage2_train_predict(pipeline, plotter)
             
-        elif choice == "3":
-            run_stage3_visualize_only(pipeline, plotter)
+        #elif choice == "3":
+        #    run_stage3_visualize_only(pipeline, plotter)
             
-        elif choice == "4":
+        elif choice == "3":
             logger.info("\n" + "=" * 60)
             logger.info("👋 Thank you for using Bitcoin Price Predictor!")
             logger.info("=" * 60)
             break
             
         else:
-            logger.warning("❌ Invalid option. Please choose 1-4.")
+            logger.warning("❌ Invalid option. Please choose 1-3.")
     
     # Cleanup
     if db_manager:
