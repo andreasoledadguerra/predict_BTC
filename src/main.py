@@ -308,9 +308,6 @@ def main():
         elif choice == "2":
             run_stage2_train_predict(pipeline, plotter)
             
-        #elif choice == "3":
-        #    run_stage3_visualize_only(pipeline, plotter)
-            
         elif choice == "3":
             logger.info("\n" + "=" * 60)
             logger.info("👋 Thank you for using Bitcoin Price Predictor!")
