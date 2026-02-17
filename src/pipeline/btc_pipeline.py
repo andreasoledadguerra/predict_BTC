@@ -1,13 +1,14 @@
-
+import pandas as pd
 import logging
+import numpy as np
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, Tuple
-import pandas as pd
-
+from sklearn.linear_model import Ridge
 from src.api.coingecko_client import CoinGeckoClient
 from src.database.postgres_manager import DatabaseManager
 from src.ml.btc_predictor import BTCPredictor
 
+logger = logging.getLogger(__name__)
 
 class BTCDataPipeline:
 
@@ -56,24 +57,63 @@ class BTCDataPipeline:
           train_end_date,
         )
         return df_train
-    
 
+    
     def predict_training_data(
-        self,
-        df_train : pd.DataFrame,
-        train_start_date: str,
-        train_end_date: str,
-        predict_days: int = 10
-    ) -> Dict[str, Any]:
-        self.logger.info(f"Preparing data for prediction...")
-        X, y = self.predictor.prepare_training_data(df_train)
-
-        self.logger.info(f"Training linear regression model...")
-        self.predictor.train(X, y)
-          
-    
-        self.logger.info(f" Generating predictions from {train_start_date} to {train_end_date}")
-        predictions = self.predictor.predict_future(predict_days)
-        predictions = predictions.tolist()
-    
-        return predictions
+        self, 
+        df, 
+        start_date, 
+        end_date, 
+        n_days_future,
+        alpha=1.0
+    ):
+        """
+        Entrenar modelos Linear y Ridge, generar predicciones.
+        
+        Args:
+            df: DataFrame con datos históricos
+            start_date: Fecha inicio (para logging)
+            end_date: Fecha fin (para logging)
+            n_days_future: Días a predecir
+            alpha: Parámetro de regularización para Ridge
+        
+        Returns:
+            dict: {
+                'linear': np.array,       # Predicciones Linear
+                'ridge': np.array,        # Predicciones Ridge
+                'linear_r2': float,       # R² score Linear
+                'ridge_r2': float,        # R² score Ridge
+                'linear_model': model,    # Modelo entrenado Linear
+                'ridge_model': model      # Modelo entrenado Ridge
+            }
+        """
+        # ---- PREPARAR DATOS (común para ambos modelos) ----
+        # Crear predictor temporal para preparar datos
+        temp_predictor = BTCPredictor()
+        X, y = temp_predictor.prepare_training_data(df)
+        
+        # ---- MODELO 1: LINEAR REGRESSION ----
+        linear_predictor = BTCPredictor()
+        linear_predictor.train(X, y)
+        linear_predictions = linear_predictor.predict_future(n_days_future)
+        linear_r2 = linear_predictor.model.score(X, y)
+        
+        # ---- MODELO 2: RIDGE REGRESSION ----
+        ridge_predictor = BTCPredictor(model=Ridge(alpha=alpha))
+        ridge_predictor.train(X, y)
+        ridge_predictions = ridge_predictor.predict_future(n_days_future)
+        ridge_r2 = ridge_predictor.model.score(X, y)
+        
+        # ---- LOGGING ----
+        logger.info(f"✅ Linear Regression trained: R² = {linear_r2:.4f}")
+        logger.info(f"✅ Ridge Regression trained: R² = {ridge_r2:.4f}, α = {alpha}")
+        
+        # ---- RETORNAR DICCIONARIO ----
+        return {
+            'linear': linear_predictions,
+            'ridge': ridge_predictions,
+            'linear_r2': linear_r2,
+            'ridge_r2': ridge_r2,
+            'linear_model': linear_predictor,
+            'ridge_model': ridge_predictor
+        }
