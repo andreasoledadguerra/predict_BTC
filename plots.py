@@ -1,7 +1,4 @@
 # plot.py
-
-# TODO: Implement visualization functions
-
 """
 Visualization script for Bitcoin price prediction models.
 
@@ -346,15 +343,6 @@ class BTCPlotter:
             print(f"❌ Error in plot_model_ridge: {e}")
             import traceback
             traceback.print_exc()
-        
-        # Plot 4: Comparison 
-        #try:
-        #    print("\n[4/4] Plotting model comparison...")
-        #    plot_paths['comparison'] = self.plot_comparison(df_real, n_days_future, alpha)
-        #except Exception as e:
-        #    print(f"❌ Error in plot_comparison: {e}")
-        #    import traceback
-        #    traceback.print_exc()
         
         logger.info("\n" + "="*60)
         logger.info(f"✅ COMPLETED: {len(result['paths'])}/2 plots generated successfully")
