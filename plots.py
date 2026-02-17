@@ -60,6 +60,10 @@ class BTCPlotter:
             'ridge': '#F18F01'      # Orange
         }
 
+        # Store last trained models
+        self.last_linear = None
+        self.last_ridge = None
+
     # ============================================================
     # PRIVATE HELPER METHODS 
     # ============================================================
@@ -98,7 +102,7 @@ class BTCPlotter:
         # Metrics
         r2 = predictor.model.score(X, y)
         mae = np.mean(np.abs(y - y_pred_train))
-        rmse = np.sqrt(np.mean(y - y_pred_train))
+        rmse = np.sqrt(np.mean((y - y_pred_train) ** 2))
 
 
         predictions = predictor.predict_future(n_days_future)
@@ -247,8 +251,9 @@ class BTCPlotter:
             n_days_future: int
         ) -> str:
     
-            print(f"\n📊 Training Linear Regression model...")
+            logger.info(f"\n📊 Training Linear Regression model...")
             model_data = self._train_and_predict(df, 'linear', n_days_future)
+            self.last_linear = model_data
             
             return self._plot_prediction_with_metrics(
                 df=df,
@@ -276,10 +281,9 @@ class BTCPlotter:
             Returns:
                 Path to saved PNG file
             """
-    
-            model_data = self._train_and_predict(
-                df, 'ridge', n_days_future, alpha=alpha
-            )
+            logger.info(f"\n📊 Training Ridge Regression model (α={alpha})...")
+            model_data = self._train_and_predict(df, 'ridge', n_days_future, alpha=alpha)
+            self.last_ridge = model_data
             suffix= f" | α={alpha} "
             
             return self._plot_prediction_with_metrics(
@@ -311,13 +315,23 @@ class BTCPlotter:
                 - 'ridge': Ridge regression plot
                 - 'comparison': Comparison plot
         """
+
+        logger.info("\n" + "="*60)
+        logger.info("🚀 GENERATING ALL BTC PREDICTION PLOTS")
+        logger.info("="*60)
         
-        plot_paths = {}
+        result = {
+             'paths': {},
+             'linear_model': None,
+             'ridge_model' : None
+        }
+        
         
         # Plot 1: Linear Regression
         try:
-            print("\n[2/4] Plotting Linear Regression model...")
-            plot_paths['linear'] = self.plot_model_lr(df_real, n_days_future)
+            logger.info("\n[2/4] Plotting Linear Regression model...")
+            result['paths']['linear'] = self.plot_model_lr(df_real, n_days_future)
+            result['linear_model'] = self.last_linear
         except Exception as e:
             print(f"❌ Error in plot_model_lr: {e}")
             import traceback
@@ -325,8 +339,9 @@ class BTCPlotter:
         
         # Plot 2: Ridge model
         try:
-            print("\n[3/4] Plotting Ridge Regression model...")
-            plot_paths['ridge'] = self.plot_model_ridge(df_real, n_days_future, alpha)
+            logger.info("\n[3/4] Plotting Ridge Regression model...")
+            result['paths']['ridge'] = self.plot_model_ridge(df_real, n_days_future, alpha)
+            result['ridge_model'] = self.last_ridge
         except Exception as e:
             print(f"❌ Error in plot_model_ridge: {e}")
             import traceback
@@ -341,8 +356,8 @@ class BTCPlotter:
         #    import traceback
         #    traceback.print_exc()
         
-        print("\n" + "="*60)
-        print(f"✅ COMPLETED: {len(plot_paths)}/2 plots generated successfully")
-        print("="*60)
+        logger.info("\n" + "="*60)
+        logger.info(f"✅ COMPLETED: {len(result['paths'])}/2 plots generated successfully")
+        logger.info("="*60)
         
-        return plot_paths
+        return result
