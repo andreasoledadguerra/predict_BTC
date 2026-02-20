@@ -65,6 +65,7 @@ class BTCPlotter:
     # PRIVATE HELPER METHODS 
     # ============================================================
 
+ 
     def _train_and_predict(
         self, 
         df: pd.DataFrame, 
@@ -83,17 +84,22 @@ class BTCPlotter:
             model_name = f"Ridge Regression (α={alpha})"
         else:
             raise ValueError(f"Unknown model type: {model_type}")
-        
 
         df = df.sort_values('date').reset_index(drop=True)
 
-        # Preparing daa
-        X, y = predictor.prepare_training_data(df)
+        # AHORA RECIBIMOS TRES VALORES: X, y, last_prices_array
+        X, y, last_prices_array = predictor.prepare_training_data(df)
+
+        ##
+        history_size =min(200, len(df))
+        extended_history = df['price_usd'].values[-history_size:].copy()
+
+        ##
+        #extended_prices = df['price_usd'].values[-20]
 
         # Train
         predictor.train(X, y)
 
-        # 
         y_pred_train = predictor.model.predict(X)
 
         # Metrics
@@ -101,9 +107,8 @@ class BTCPlotter:
         mae = np.mean(np.abs(y - y_pred_train))
         rmse = np.sqrt(np.mean((y - y_pred_train) ** 2))
 
-
-        predictions = predictor.predict_future(n_days_future)
-
+        # PREDICCIÓN: pasamos explícitamente los últimos precios
+        predictions = predictor.predict_future(n_days_future, last_prices=extended_history)
 
         # Generate future dates
         last_date = df['date'].iloc[-1]
@@ -112,7 +117,7 @@ class BTCPlotter:
             periods=n_days_future,
             freq='D'
         )
-        
+
         last_price = df['price_usd'].iloc[-1]
 
         return {
@@ -126,8 +131,10 @@ class BTCPlotter:
             'future_dates': future_dates,
             'model_name': model_name,
             'last_date': last_date,
+            'last_price': last_price,
             'predictor': predictor
         }
+
 
     def _plot_prediction_with_metrics(
         self,
@@ -164,16 +171,22 @@ class BTCPlotter:
         # Historical data
         ax_main.plot(
             df['date'], df['price_usd'],
-            color=color, linewidth=1.5, linestyle='-', alpha=0.7,
-            label=f'{model_name} Training Fit (R²={r2:.3f})', zorder=4
+            color=color, linewidth=2, label='Real BTC Price', zorder=5
         )
         
-        # Future predictions
+
         ax_main.plot(
-            future_dates, predictions,
-            color=color, linestyle='--', linewidth=2.5, marker='D', markersize=6,
-            markerfacecolor='white',markeredgewidth=2, markeredgecolor=color,
-                 label=f'{model_name} Future Prediction', zorder=6)
+            df['date'], y_pred_train,
+            color=color, linewidth=1.5, linestyle='-', alpha=0.7,
+            label=f'{model_name} Training Fit (R²={r2:.3f})', zorder=4
+    )
+        
+        # Future predictions
+        #ax_main.plot(
+        #    future_dates, predictions,
+        #    color=color, linestyle='--', linewidth=2.5, marker='D', markersize=6,
+        #    markerfacecolor='white',markeredgewidth=2, markeredgecolor=color,
+        #         label=f'{model_name} Future Prediction', zorder=6)
         
         
       # Intervalo de confianza (sombreado)
