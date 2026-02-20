@@ -100,7 +100,9 @@ class BTCPlotter:
         # Train
         predictor.train(X, y)
 
-        y_pred_train = predictor.model.predict(X)
+        X_scaled = predictor.scaler.transform(X)
+
+        y_pred_train = predictor.model.predict(X_scaled)
 
         # Metrics
         r2 = predictor.model.score(X, y)
