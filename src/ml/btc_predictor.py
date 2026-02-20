@@ -107,6 +107,9 @@ class BTCPredictor:
                 raise ValueError("No last_prices available")
             prices_to_use = self.last_prices
 
+        if len(prices_to_use) < self.n_lags + 1:
+            raise ValueError(f"Not enough historical prices to start prediction. Need at least {self.n_lags + 1}, got {len(prices_to_use)}")
+        
         predictions = []
         current_prices = list(prices_to_use)
 
@@ -141,30 +144,6 @@ class BTCPredictor:
 
         return np.array(predictions)
 
-    #def predict_future(self, n_days: int) -> np.ndarray:
-    #    self.logger.info(f"🔍 predict_future: last_prices es {self.last_prices}")
-    #    if self.last_prices is None:
-    #        raise ValueError("No last prices available. Call prepare_training_data first.")
-#
-    #    history = list(self.last_prices)
-    #    predictions = []
-#
-    #    for step in range(n_days):
-    #        temp_prices = np.array(history + predictions)
-    #        feature_df = self._create_features(temp_prices)
-#
-    #        if feature_df.empty:
-    #            recent = temp_prices[-self.n_lags:]
-    #            feature_vector = recent[::-1]
-    #            self.logger.warning(f"Feature df empty at step {step}, using manual lags")
-    #        else:
-    #            feature_vector = feature_df.iloc[-1][self.feature_names].values
-#
-    #        feature_vector_scaled = self.scaler.transform(feature_vector.reshape(1, -1))
-    #        pred = self.model.predict(feature_vector_scaled)[0]
-    #        predictions.append(pred)
-#
-    #    return np.array(predictions)
 # =======================================================ORIGINAL===============================================================
 #import numpy as np
 #import pandas as pd
