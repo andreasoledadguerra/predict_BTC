@@ -176,9 +176,13 @@ class BTCPlotter:
             color=color, linewidth=2, label='Real BTC Price', zorder=5
         )
         
+        n_lags = model_data['predicor'].n_lags
+
+        dates_train = df['date'].iloc[n_lags:].reset_index(drop=True)
+
 
         ax_main.plot(
-            df['date'], y_pred_train,
+            dates_train, model_data['y_pred_train'],
             color=color, linewidth=1.5, linestyle='-', alpha=0.7,
             label=f'{model_name} Training Fit (R²={r2:.3f})', zorder=4
     )
