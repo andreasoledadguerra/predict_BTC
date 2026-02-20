@@ -34,41 +34,29 @@ class BTCPredictor:
         df.dropna(inplace=True)
         return df
 
+
+
     def prepare_training_data(self, df: pd.DataFrame) -> tuple:
         prices = df['price_usd'].values
-        if len(prices) < self.n_lags:
-            raise ValueError(f"Not enough data: need at least {self.n_lags} prices, got {len(prices)}")
+        if len(prices) < self.n_lags + 1:
+            raise ValueError(f"Not enough data: need at least {self.n_lags + 1} prices, got {len(prices)}")
 
-        # Guardar los últimos precios para devolverlos (ya no como atributo)
+       
         last_prices = prices[-self.n_lags:].copy()
         self.last_prices = last_prices
-        self.logger.info(f"✅ last_prices (últimos 3): {last_prices[-3:]}")
+        self.logger.info(f"✅ last_prices (last 3): {self.last_prices[-3:]}")
 
         feature_df = self._create_features(prices)
+        if len(feature_df) == 0:
+           raise ValueError(f"Feature creation failed: need at least {self.n_lags + 1} prices, got {len(prices)}")
+
         self.feature_names = [col for col in feature_df.columns if col != 'price']
         X = feature_df.drop('price', axis=1).values
         y = feature_df['price'].values
-
+       
         self.logger.info(f"Prepared {len(X)} samples with {X.shape[1]} features")
         return X, y, last_prices
 
-
-
-    #def prepare_training_data(self, df: pd.DataFrame) -> tuple:
-    #    prices = df['price_usd'].values
-    #    if len(prices) < self.n_lags:
-    #        raise ValueError(f"Not enough data: need at least {self.n_lags} prices, got {len(prices)}")
-#
-    #    # ASIGNACIÓN CLAVE
-    #    self.last_prices = prices[-self.n_lags:].copy()
-    #    self.logger.info(f"✅ last_prices GUARDADOS (últimos 3): {self.last_prices[-3:]}")
-#
-    #    feature_df = self._create_features(prices)
-    #    self.feature_names = [col for col in feature_df.columns if col != 'price']
-    #    X = feature_df.drop('price', axis=1).values
-    #    y = feature_df['price'].values
-    #    self.logger.info(f"Prepared {len(X)} samples with {X.shape[1]} features")
-    #    return X, y
 
     def train(self, X, y):
         """
