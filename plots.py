@@ -87,8 +87,8 @@ class BTCPlotter:
 
         df = df.sort_values('date').reset_index(drop=True)
 
-        # AHORA RECIBIMOS TRES VALORES: X, y, last_prices_array
-        X, y, last_prices_array = predictor.prepare_training_data(df)
+        
+        X, y, _ = predictor.prepare_training_data(df)
 
         ##
         history_size =min(200, len(df))
