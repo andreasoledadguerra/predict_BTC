@@ -188,11 +188,10 @@ class BTCPlotter:
     )
         
         # Future predictions
-        #ax_main.plot(
-        #    future_dates, predictions,
-        #    color=color, linestyle='--', linewidth=2.5, marker='D', markersize=6,
-        #    markerfacecolor='white',markeredgewidth=2, markeredgecolor=color,
-        #         label=f'{model_name} Future Prediction', zorder=6)
+        ax_main.plot(
+            future_dates, predictions,
+            color='red', linestyle='--', linewidth=2,
+                 label=f'{model_name} Future Prediction', zorder=6)
         
         
       # Intervalo de confianza (sombreado)
