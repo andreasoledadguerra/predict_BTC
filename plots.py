@@ -105,7 +105,7 @@ class BTCPlotter:
         y_pred_train = predictor.model.predict(X_scaled)
 
         # Metrics
-        r2 = predictor.model.score(X, y)
+        r2 = predictor.model.score(X_scaled, y)
         mae = np.mean(np.abs(y - y_pred_train))
         rmse = np.sqrt(np.mean((y - y_pred_train) ** 2))
 
