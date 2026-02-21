@@ -173,7 +173,7 @@ class BTCPlotter:
         # Historical data
         ax_main.plot(
             df['date'], df['price_usd'],
-            color=color, linewidth=2, label='Real BTC Price', zorder=5
+            color='#2E86AB', linewidth=2.5, label='Real BTC Price', zorder=5, alpha=0.8
         )
         
         n_lags = model_data['predictor'].n_lags
