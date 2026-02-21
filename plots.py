@@ -176,7 +176,7 @@ class BTCPlotter:
             color=color, linewidth=2, label='Real BTC Price', zorder=5
         )
         
-        n_lags = model_data['predicor'].n_lags
+        n_lags = model_data['predictor'].n_lags
 
         dates_train = df['date'].iloc[n_lags:].reset_index(drop=True)
 
