@@ -183,7 +183,7 @@ class BTCPlotter:
 
         ax_main.plot(
             dates_train, model_data['y_pred_train'],
-            color=color, linewidth=1.5, linestyle='-', alpha=0.7,
+            color=color, linewidth=2.0, linestyle='-', alpha=0.6,
             label=f'{model_name} Training Fit (R²={r2:.3f})', zorder=4
     )
         
