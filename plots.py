@@ -178,7 +178,7 @@ class BTCPlotter:
         
         n_lags = model_data['predictor'].n_lags
 
-        dates_train = df['date'].iloc[n_lags:].reset_index(drop=True)
+        dates_train = df['date'].iloc[n_lags:].values
 
 
         ax_main.plot(
