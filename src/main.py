@@ -238,6 +238,10 @@ def run_stage2_train_predict(pipeline: BTCDataPipeline, plotter: BTCPlotter):
         for i, pred in enumerate(ridge_data['predictions'], start=1):
             logger.info(f"   Day {i}: ${pred:,.2f}")
 
+
+    #logger.info(f"Coeficientes Linear: {linear_predictor.model.coef_}")
+    #logger.info(f"Coeficientes Ridge: {ridge_predictor.model.coef_}")
+
     logger.info("\n" + "=" * 60)
     logger.info("✅ STAGE 2 COMPLETED SUCCESSFULLY")
     logger.info("=" * 60)
