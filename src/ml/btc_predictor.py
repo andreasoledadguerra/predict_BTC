@@ -25,13 +25,34 @@ class BTCPredictor:
         self.logger = logging.getLogger(__name__)
 
     def _create_features(self, prices: np.ndarray) -> pd.DataFrame:
+
         df = pd.DataFrame({'price': prices})
+
         for lag in range(1, self.n_lags + 1):
             df[f'lag_{lag}'] = df['price'].shift(lag)
+
         for w in self.windows:
             df[f'rolling_mean_{w}'] = df['price'].rolling(window=w, min_periods=1).mean()
             df[f'rolling_std_{w}'] = df['price'].rolling(window=w, min_periods=2).std()
+
+            #Add tendency's features
+            # 1. Momentum (cambio porcentual)
+            df['price_change_1d'] = df['price'].pct_change(1)
+            df['price_change_7d'] = df['price'].pct_change(7)
+
+            # 2. Ratio precio actual vs media
+            df['price_to_ma7'] = df['price'] / df['rolling_mean_7']
+            df['price_to_ma14'] = df['price'] / df['rolling_mean_14']
+
+            # 3. Diferencias
+            df['diff_1d'] = df['price'].diff(1)
+            df['diff_7d'] = df['price'].diff(7)
+        
+            # Volatilidad
+            df['volatility_7d'] = df['rolling_std_7'] / df['rolling_mean_7']
+
         df.dropna(inplace=True)
+
         return df
 
 
