@@ -176,10 +176,13 @@ class BTCPlotter:
             color='#2E86AB', linewidth=2.5, label='Real BTC Price', zorder=5, alpha=0.8
         )
         
-        n_lags = model_data['predictor'].n_lags
+        #n_lags = model_data['predictor'].n_lags
 
-        dates_train = df['date'].iloc[n_lags:].values
+        #dates_train = df['date'].iloc[n_lags:].values
 
+        start_idx = len(df) - len(model_data['y_pred_train'])
+
+        dates_train = df['date'].iloc[start_idx:].values
 
         ax_main.plot(
             dates_train, model_data['y_pred_train'],
