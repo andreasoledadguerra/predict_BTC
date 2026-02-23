@@ -43,7 +43,8 @@ class BTCPredictor:
 
     def prepare_training_data(self, df: pd.DataFrame) -> tuple:
         prices = df['price_usd'].values
-        if len(prices) < self.n_lags + 1:
+        min_required = self.n_lags + 1
+        if len(prices) < min_required:
             raise ValueError(f"Not enough data: need at least {self.n_lags + 1} prices, got {len(prices)}")
 
        
