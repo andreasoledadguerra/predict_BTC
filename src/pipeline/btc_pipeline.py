@@ -71,10 +71,6 @@ class BTCDataPipeline:
 
         #context window
         extended_prices = df['price_usd'].values[-20:]
-
-        logger.info(f"🔍 extended_prices length: {len(extended_prices)}")
-        logger.info(f"🔍 extended_prices (primeros 5): {extended_prices[:5]}")
-        logger.info(f"🔍 extended_prices (últimos 5): {extended_prices[-5:]}")
         
         # ---- MODELO 1: LINEAR REGRESSION ----
         linear_predictor = BTCPredictor()
