@@ -39,31 +39,10 @@ class BTCDataPipeline:
     def predict_training_data(
         self, 
         df, 
-        start_date, 
-        end_date, 
         n_days_future,
         alpha=1.0
     ):
-        """
-        Entrenar modelos Linear y Ridge, generar predicciones.
-        
-        Args:
-            df: DataFrame con datos históricos
-            start_date: Fecha inicio (para logging)
-            end_date: Fecha fin (para logging)
-            n_days_future: Días a predecir
-            alpha: Parámetro de regularización para Ridge
-        
-        Returns:
-            dict: {
-                'linear': np.array,       # Predicciones Linear
-                'ridge': np.array,        # Predicciones Ridge
-                'linear_r2': float,       # R² score Linear
-                'ridge_r2': float,        # R² score Ridge
-                'linear_model': model,    # Modelo entrenado Linear
-                'ridge_model': model      # Modelo entrenado Ridge
-            }
-        """
+        """Train Linear and Ridge models, and generate predictions"""
         # ---- PREPARE DATA (for both models) ----
 
         temp_predictor = BTCPredictor()
@@ -94,13 +73,13 @@ class BTCDataPipeline:
         logger.info(f"✅ Linear Regression trained: R² = {linear_r2:.4f}")
         logger.info(f"✅ Ridge Regression trained: R² = {ridge_r2:.4f}, α = {alpha}")
         
-        # ---- RETORNAR DICCIONARIO ----
+        # ---- RETURN DICT ----
         return {
-            'linear': linear_predictions,
-            'ridge': ridge_predictions,
-            'linear_r2': linear_r2,
-            'ridge_r2': ridge_r2,
-            'linear_model': linear_predictor,
-            'ridge_model': ridge_predictor,
+            'linear': linear_predictions, # predictions Linear
+            'ridge': ridge_predictions,  # predictions_Ridge
+            'linear_r2': linear_r2,  #  R² score Linear
+            'ridge_r2': ridge_r2,   # R² score Ridge
+            'linear_model': linear_predictor, # Trained Linear model
+            'ridge_model': ridge_predictor, # Trained Ridge model
             'last_prices': last_prices
         }
