@@ -69,7 +69,7 @@ class BTCDataPipeline:
         temp_predictor = BTCPredictor()
         X, y, last_prices = temp_predictor.prepare_training_data(df)
 
-        ###
+        #context window
         extended_prices = df['price_usd'].values[-20:]
 
         logger.info(f"🔍 extended_prices length: {len(extended_prices)}")
@@ -91,7 +91,7 @@ class BTCDataPipeline:
         ridge_predictor.feature_names = temp_predictor.feature_names
         ridge_predictor.train(X, y)
         ridge_predictions = ridge_predictor.predict_future(n_days_future,last_prices=extended_prices)
-        X_scaled =linear_predictor.scaler.transform(X)
+        X_scaled =ridge_predictor.scaler.transform(X)
         ridge_r2 = ridge_predictor.model.score(X_scaled, y)
         
         # ---- LOGGING ----
