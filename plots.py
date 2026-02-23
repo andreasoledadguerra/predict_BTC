@@ -122,6 +122,13 @@ class BTCPlotter:
 
         last_price = df['price_usd'].iloc[-1]
 
+        # LOGS para comparar coeficientes (solo si el modelo tiene coef_)
+        if hasattr(predictor.model, 'coef_'):
+            logger.info(f"📊 {model_name} - Coeficientes (primeros 5): {predictor.model.coef_[:5]}")
+            if len(predictor.model.coef_) > 5:
+                logger.info("   ... (más coeficientes)")
+
+
         return {
             'X': X,
             'y': y,
@@ -134,7 +141,9 @@ class BTCPlotter:
             'model_name': model_name,
             'last_date': last_date,
             'last_price': last_price,
-            'predictor': predictor
+            'predictor': predictor,
+            'coef': predictor.model.coef_ if hasattr(predictor.model, 'coef_') else None,
+            'intercept': predictor.model.intercept_ if hasattr(predictor.model, 'intercept_') else None
         }
 
 
@@ -255,7 +264,7 @@ class BTCPlotter:
                     fontsize=9)
         
         # Save figure
-        plt.tight_layout()
+        #plt.tight_layout()
         filepath = os.path.join(self.output_dir, filename)
         plt.savefig(filepath, dpi=150, bbox_inches='tight')
         plt.close(fig)
@@ -284,7 +293,7 @@ class BTCPlotter:
             self, 
             df: pd.DataFrame, 
             n_days_future: int,
-            alpha: float = 1.0
+            alpha: int = 1.0
         ) -> str:
             """
             Generate plot for Ridge Regression model.
