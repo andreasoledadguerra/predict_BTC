@@ -32,7 +32,7 @@ class BTCPredictor:
             df[f'lag_{lag}'] = df['price'].shift(lag)
 
         for w in self.windows:
-            df[f'rolling_mean_{w}'] = df['price'].shift(1).rolling(window=w, min_periods=1).mean()
+            df[f'rolling_mean_{w}'] = df['price'].shift(1).rolling(window=w, min_periods=1).mean() # .shift(1) for avoid data leakage
             df[f'rolling_std_{w}'] = df['price'].shift(1).rolling(window=w, min_periods=2).std()
 
         df.dropna(inplace=True)
@@ -49,7 +49,6 @@ class BTCPredictor:
        
         last_prices = prices[-self.n_lags:].copy()
         self.last_prices = last_prices
-        self.logger.info(f"✅ last_prices (last 3): {self.last_prices[-3:]}")
 
         feature_df = self._create_features(prices)
         if len(feature_df) == 0:
@@ -93,7 +92,6 @@ class BTCPredictor:
     
         if last_prices is not None:
             prices_to_use = last_prices
-            self.logger.info(f"📦 Using provided last_prices (last 3): {prices_to_use[-3:]}")
         else:
             if not hasattr(self, 'last_prices') or self.last_prices is None:
                 raise ValueError("No last_prices available")
