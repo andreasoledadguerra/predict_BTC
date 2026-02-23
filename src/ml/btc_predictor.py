@@ -21,7 +21,7 @@ class BTCPredictor:
         self.scaler = StandardScaler()
         self.is_trained = False
         self.feature_names = None
-        #self.last_prices = None
+        self.last_prices = None
         self.logger = logging.getLogger(__name__)
 
     def _create_features(self, prices: np.ndarray) -> pd.DataFrame:
@@ -45,7 +45,7 @@ class BTCPredictor:
         prices = df['price_usd'].values
         min_required = self.n_lags + 1
         if len(prices) < min_required:
-            raise ValueError(f"Not enough data: need at least {self.n_lags + 1} prices, got {len(prices)}")
+            raise ValueError(f"Not enough data: need at least {min_required} prices, got {len(prices)}")
 
        
         last_prices = prices[-self.n_lags:].copy()
@@ -53,7 +53,7 @@ class BTCPredictor:
 
         feature_df = self._create_features(prices)
         if len(feature_df) == 0:
-           raise ValueError(f"Feature creation failed: need at least {self.n_lags + 1} prices, got {len(prices)}")
+           raise ValueError(f"Feature creation failed: need at least {min_required} prices, got {len(prices)}")
 
         self.feature_names = [col for col in feature_df.columns if col != 'price']
         X = feature_df.drop('price', axis=1).values
@@ -64,13 +64,7 @@ class BTCPredictor:
 
 
     def train(self, X, y):
-        """
-        Train the model.
 
-        Args:
-            X: Feature matrix (numpy array or DataFrame)
-            y: Target values
-        """
         if not self.is_trained:
             # Fit scaler
             X_scaled = self.scaler.fit_transform(X)
@@ -90,43 +84,44 @@ class BTCPredictor:
 
 
     def predict_future(self, n_days: int, last_prices=None) -> np.ndarray:
-    
         if last_prices is not None:
             prices_to_use = last_prices
         else:
-            if not hasattr(self, 'last_prices') or self.last_prices is None:
+            if self.last_prices is None:
                 raise ValueError("No last_prices available")
             prices_to_use = self.last_prices
 
-        if len(prices_to_use) < self.n_lags + 1:
-            raise ValueError(f"Not enough historical prices to start prediction. Need at least {self.n_lags + 1}, got {len(prices_to_use)}")
+        min_required = self.n_lags + max(self.windows)
+        if len(prices_to_use) < min_required:
+            raise ValueError(f"Not enough historical prices to start prediction. Need at least {min_required}, got {len(prices_to_use)}")
         
         predictions = []
         current_prices = list(prices_to_use)
 
         for step in range(n_days):
             # Crear Series de precios para usar _create_features
-            prices_series = pd.Series(current_prices)
+            #prices_series = pd.Series(current_prices)
 
-            # Usar el MISMO método que en training
-            feature_df = self._create_features(prices_series.values)
+            
+            feature_df = self._create_features(np.array(current_prices))
 
-            # Tomar la última fila (que corresponde al último precio)
+            # Take the last row (that correspond to the last price)
             if len(feature_df) == 0:
-                self.logger.error(f"❌ _create_features returned empty DataFrame at step {step}")
-                raise ValueError("Cannot create features for prediction")
+                raise ValueError("Cannot create features for prediction at step {step}")
 
-            # Obtener features de la última fila (sin la columna 'price')
+            #Retrieve features from the last row (without the column 'price')
             feature_row = feature_df.drop('price', axis=1).iloc[-1:].values
 
-            # Verificar dimensiones
+            # Verify dimensions
             if feature_row.shape[1] != len(self.feature_names):
-                self.logger.error(f"❌ Feature mismatch: got {feature_row.shape[1]}, expected {len(self.feature_names)}")
-                self.logger.error(f"   Created columns: {feature_df.drop('price', axis=1).columns.tolist()}")
-                self.logger.error(f"   Expected: {self.feature_names}")
-                raise ValueError(f"Feature count mismatch")
+                #self.logger.error(f"❌ Feature mismatch: got {feature_row.shape[1]}, expected {len(self.feature_names)}")
+                #self.logger.error(f"   Created columns: {feature_df.drop('price', axis=1).columns.tolist()}")
+                #self.logger.error(f"   Expected: {self.feature_names}")
+                raise ValueError(f"Feature count mismatch at step {step}: "
+                                 f"got {feature_row.shape[1]}, expected {len(self.feature_names)}"
+                                 )
 
-            # Escalar y predecir
+            # Scale and predict
             feature_vector_scaled = self.scaler.transform(feature_row)
             next_price = self.model.predict(feature_vector_scaled)[0]
 
