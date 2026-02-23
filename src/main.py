@@ -177,28 +177,7 @@ def run_stage2_train_predict(pipeline: BTCDataPipeline, plotter: BTCPlotter):
     logger.info(f"🔮 Predicting {predict_days} days into the future")
     logger.info(f"🎯 Ridge alpha: {alpha}")
 
-    # ---- TRAIN MODELS AND PREDICT ----
-    #try:
-    #    predictions = pipeline.predict_training_data(
-    #        df_train, 
-    #        train_start, 
-    #        train_end, 
-    #        predict_days,
-    #        alpha=alpha
-    #    )
-    #    
-    #    if predictions is None:
-    #        logger.error("❌ Model training failed")
-    #        return
-    #        
-    #except Exception as e:
-    #    logger.error(f"❌ Error during training/prediction: {e}")
-    #    import traceback
-    #    #logger.debug(traceback.format_exc())
-    #    traceback.print_exc() # complete stack
-    #    return
 
-    # ---- GENERATE PLOTS (this also trains the models) ----
     logger.info("\n" + "-" * 60)
     logger.info("📊 GENERATING VISUALIZATIONS")
     logger.info("-" * 60)
