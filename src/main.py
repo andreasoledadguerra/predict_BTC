@@ -238,79 +238,9 @@ def run_stage2_train_predict(pipeline: BTCDataPipeline, plotter: BTCPlotter):
         for i, pred in enumerate(ridge_data['predictions'], start=1):
             logger.info(f"   Day {i}: ${pred:,.2f}")
 
-
-    #logger.info(f"Coeficientes Linear: {linear_predictor.model.coef_}")
-    #logger.info(f"Coeficientes Ridge: {ridge_predictor.model.coef_}")
-
     logger.info("\n" + "=" * 60)
     logger.info("✅ STAGE 2 COMPLETED SUCCESSFULLY")
     logger.info("=" * 60)
-
-
-
-    # ---- GENERATE PLOTS ---
-    #logger.info("\n" + "-" * 60)
-    #logger.info("📊 GENERATING VISUALIZATIONS")
-    #logger.info("-" * 60)
-    #
-    #try:
-    #    # Update plotter with the training data
-    #    plotter.df = df_train
-    #    
-    #    # Generate all plots
-    #    plot_paths = plotter.plot_all(
-    #        df_real=df_train,
-    #        n_days_future=predict_days,
-    #        alpha=alpha
-    #    )
-    #    
-    #    logger.info("\n✅ Plots generated successfully:")
-    #    for model_type, path in plot_paths.items():
-    #        logger.info(f"   📈 {model_type.upper()}: {path}")
-    #        
-    #except Exception as e:
-    #    logger.error(f"❌ Error generating plots: {e}")
-    #    import traceback
-    #    logger.debug(traceback.format_exc())
-#
-    ## ---- DISPLAY PREDICTIONS ----
-    #logger.info("\n" + "=" * 60)
-    #logger.info("📈 PREDICTION RESULTS")
-    #logger.info("=" * 60)
-#
-    #logger.info(f"\n🔮 PREDICTIONS FOR THE NEXT {predict_days} DAYS:")
-#
-    ## Display predictions based on structure
-    #if isinstance(predictions, dict):
-    #    # If predictions is a dictionary with model results
-    #    linear_preds = predictions.get("linear", [])
-    #    ridge_preds = predictions.get("ridge", [])
-    #    linear_r2 = predictions.get("linear_r2", 0.0)
-    #    ridge_r2 = predictions.get("ridge_r2", 0.0)
-#
-    #    if len(linear_preds) > 0:
-    #        logger.info(f"\n📊 Linear Regression (R² = {linear_r2:.4f}):")
-    #        # Show only future predictions (not training period)
-    #        future_start_idx = len(df_train) if len(linear_preds) > len(df_train) else 0
-    #        for i, pred in enumerate(linear_preds[future_start_idx:], start=1):
-    #            logger.info(f"   Day {i}: ${pred:.2f}")
-#
-    #    if len(ridge_preds) > 0:
-    #        logger.info(f"\n🎯 Ridge Regression (R² = {ridge_r2:.4f}, α = {alpha}):")
-    #        future_start_idx = len(df_train) if len(ridge_preds) > len(df_train) else 0
-    #        for i, pred in enumerate(ridge_preds[future_start_idx:], start=1):
-    #            logger.info(f"   Day {i}: ${pred:.2f}")
-    #else:
-    #    # Fallback if predictions is just an array
-    #    logger.info("\n📈 Predictions:")
-    #    for i, pred in enumerate(predictions[:predict_days], start=1):
-    #        logger.info(f"   Day {i}: ${pred:.2f}")
-#
-    #logger.info("\n" + "=" * 60)
-    #logger.info("✅ STAGE 2 COMPLETED SUCCESSFULLY")
-    #logger.info("=" * 60)
-#
-    #return predictions
 
 
 # ====================================== MAIN MENU =================================================
