@@ -89,22 +89,29 @@ def run_stage1_fetch(pipeline: BTCDataPipeline):
 
     try:
         # Validate dates
-        datetime.strptime(fetch_start, "%Y-%m-%d")
-        datetime.strptime(fetch_end, "%Y-%m-%d")
+        start_dt = datetime.strptime(fetch_start, "%Y-%m-%d")
+        end_dt = datetime.strptime(fetch_end, "%Y-%m-%d")
     except ValueError:
         logger.error("❌ Invalid date format. Please use YYYY-MM-DD")
         return
 
-    logger.info(f"\n🔄 Fetching data from {fetch_start} to {fetch_end}...")
+    #logger.info(f"\n🔄 Fetching data from {fetch_start} to {fetch_end}...")
     
-    try:
-        # Fetch data from API
-        result_fetch = pipeline.fetch_data(fetch_start, fetch_end)
-        
-        if result_fetch is None or len(result_fetch) == 0:
-            logger.warning("⚠️  No data fetched from CoinGecko")
-            return
+    # Iterate day by day
+    
 
+    try:
+
+        # verificar si los datos ya estaba en la base de datos    
+        df = db_manager.get_btc_prices(fetch_start, fetch_end)
+        if df != None :
+            pass
+        else:
+            # Fetch data from API
+            result_fetch = pipeline.fetch_data(fetch_start, fetch_end)                      
+            if result_fetch is None or len(result_fetch) == 0:
+                logger.warning("⚠️  No data fetched from CoinGecko")
+            
         # Save to database
         result_save = pipeline.save_data_in_db(result_fetch)
 
