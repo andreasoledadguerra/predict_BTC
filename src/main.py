@@ -98,19 +98,36 @@ def run_stage1_fetch(pipeline: BTCDataPipeline):
     #logger.info(f"\n🔄 Fetching data from {fetch_start} to {fetch_end}...")
     
     # Iterate day by day
-    
-
     try:
+        missing_dates = []
+        current_dt = start_dt
 
-        # verificar si los datos ya estaba en la base de datos    
-        df = db_manager.get_btc_prices(fetch_start, fetch_end)
-        if df != None :
-            pass
+        while current_dt <= end_dt:
+            date_str = current_dt.strftime("%Y-%m-%d")
+            day_data = db_manager.get_btc_prices(date_str, date_str)
+        
+        if day_data is not None and len(day_data) > 0:
+            logger.debug(f"{date_str} already in DB, skipping.")
         else:
-            # Fetch data from API
-            result_fetch = pipeline.fetch_data(fetch_start, fetch_end)                      
-            if result_fetch is None or len(result_fetch) == 0:
-                logger.warning("⚠️  No data fetched from CoinGecko")
+            logger.info(f" {date_str} not found in DB, will fetch.")
+            missing_dates.append(date_str)
+        
+        current_dt += timedelta(days=1)
+
+        
+
+
+    #try:
+#
+    #    # verificar si los datos ya estaba en la base de datos    
+    #    df = db_manager.get_btc_prices(fetch_start, fetch_end)
+    #    if df != None :
+    #        pass
+    #    else:
+    #        # Fetch data from API
+    #        result_fetch = pipeline.fetch_data(fetch_start, fetch_end)                      
+    #        if result_fetch is None or len(result_fetch) == 0:
+    #            logger.warning("⚠️  No data fetched from CoinGecko")
             
         # Save to database
         result_save = pipeline.save_data_in_db(result_fetch)
