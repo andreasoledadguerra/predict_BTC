@@ -323,7 +323,7 @@ def main():
         choice = input("\n   Your choice (1-3): ").strip()
 
         if choice == "1":
-            run_stage1_fetch(pipeline)
+            run_stage1_fetch(pipeline, db_manager)
             
         elif choice == "2":
             run_stage2_train_predict(pipeline, plotter)
