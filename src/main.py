@@ -107,11 +107,11 @@ def run_stage1_fetch(pipeline: BTCDataPipeline, db_manager: DatabaseManager):
             date_str = current_dt.strftime("%Y-%m-%d")
             day_data = db_manager.get_btc_prices(date_str, date_str)
         
-        if day_data is not None and len(day_data) > 0:
-            logger.debug(f"{date_str} already in DB, skipping.")
-        else:
-            logger.info(f" {date_str} not found in DB, will fetch.")
-            missing_dates.append(date_str)
+            if day_data is not None and len(day_data) > 0:
+                logger.debug(f"{date_str} already in DB, skipping.")
+            else:
+                logger.info(f" {date_str} not found in DB, will fetch.")
+                missing_dates.append(date_str)
         
         current_dt += timedelta(days=1)
 
