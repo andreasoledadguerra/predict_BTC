@@ -10,6 +10,7 @@ import sys
 import logging
 from datetime import datetime
 from dotenv import load_dotenv
+from datetime import timedelta
 
 from src.config.settings import get_postgres_settings, get_coingecko_settings
 from src.api.coingecko_client import CoinGeckoClient
@@ -114,7 +115,7 @@ def run_stage1_fetch(pipeline: BTCDataPipeline):
         
         current_dt += timedelta(days=1)
 
-        
+
 
 
     #try:
