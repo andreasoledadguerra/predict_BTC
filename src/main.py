@@ -115,6 +115,40 @@ def run_stage1_fetch(pipeline: BTCDataPipeline):
         
         current_dt += timedelta(days=1)
 
+        # Fetch and save what is missing
+        if not missing_dates:
+            logger.info("✅ All dates already exist in database. Nothing to fetch.")
+        else:
+            logger.info(f"📥 Fetching {len(missing_dates)} missing days from CoinGecko...")
+
+            # Fetchear el rango de fechas faltantes de una sola vez
+            missing_start = missing_dates[0]
+            missing_end = missing_dates[-1]
+
+            result_fetch = pipeline.fetch_data(missing_start, missing_end)
+
+            if result_fetch is None or len(result_fetch) == 0:
+                logger.warning("⚠️  No data fetched from CoinGecko")
+                return
+
+            result_save = pipeline.save_data_in_db(result_fetch)
+            logger.info(f"✅ {result_save} new records saved to database.")
+
+
+        # ---- Get full range from the database----
+        logger.info(f"\n📦 Loading full date range from DB: {fetch_start} → {fetch_end}")
+        df_full = db_manager.get_btc_prices(fetch_start, fetch_end)
+
+        if df_full is None or len(df_full) == 0:
+            logger.error("❌ Could not retrieve data from database after fetch.")
+            return
+
+        logger.info(f"✅ {len(df_full)} total records available for this range.")
+        return df_full
+
+    except Exception as e:
+        logger.error(f"❌ Error in Stage 1: {e}")
+        logger.debug(traceback.format_exc())
 
 
 
@@ -131,7 +165,7 @@ def run_stage1_fetch(pipeline: BTCDataPipeline):
     #            logger.warning("⚠️  No data fetched from CoinGecko")
             
         # Save to database
-        result_save = pipeline.save_data_in_db(result_fetch)
+        #result_save = pipeline.save_data_in_db(result_fetch)
 
         logger.info("\n" + "-" * 60)
         logger.info("📊 STAGE 1 RESULTS")
