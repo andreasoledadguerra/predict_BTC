@@ -113,7 +113,7 @@ def run_stage1_fetch(pipeline: BTCDataPipeline, db_manager: DatabaseManager):
                 logger.info(f" {date_str} not found in DB, will fetch.")
                 missing_dates.append(date_str)
         
-        current_dt += timedelta(days=1)
+            current_dt += timedelta(days=1)
 
         # Fetch and save what is missing
         if not missing_dates:
