@@ -220,12 +220,16 @@ def run_stage2_train_predict(pipeline: BTCDataPipeline, plotter: BTCPlotter):
             return
         
         # Group by closing price
-        #df_train['timestamp'] = pd.to_datetime()
+        df_train['timestamp'] = pd.to_datetime(df_train['timestamp'])
+        df_train = (
+            df_train.groupby(df_train['timestamp'].dt.date)
+            .last()
+            .reset_index(drop=True)
+        )
 
+        df_train['timestamp'] = pd.to_datetime(df_train['timestamp']) #restore datetime type
 
-
-
-        logger.info(f"✅ Loaded {len(df_train)} records from database")
+        logger.info(f"✅ Loaded {len(df_train)} daily records from database")
         
     except Exception as e:
         logger.error(f"❌ Error loading data from database: {e}")
