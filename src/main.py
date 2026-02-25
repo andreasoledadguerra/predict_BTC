@@ -67,7 +67,7 @@ def initialize_components():
 
 # ====================================== STAGE 1: FETCH DATA ================================================
 
-def run_stage1_fetch(pipeline: BTCDataPipeline):
+def run_stage1_fetch(pipeline: BTCDataPipeline, db_manager: DatabaseManager):
     """
     Execute STAGE 1: Fetch data from CoinGecko API and save to PostgreSQL.
     
