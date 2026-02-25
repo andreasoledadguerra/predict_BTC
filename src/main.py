@@ -8,6 +8,7 @@ Provides interactive menu for data fetching, model training, and visualization.
 import os
 import sys
 import logging
+import pandas as pd
 from datetime import datetime
 from dotenv import load_dotenv
 from datetime import timedelta
@@ -218,6 +219,12 @@ def run_stage2_train_predict(pipeline: BTCDataPipeline, plotter: BTCPlotter):
             logger.info("💡 Tip: Run STAGE 1 first to fetch data from CoinGecko")
             return
         
+        # Group by closing price
+        #df_train['timestamp'] = pd.to_datetime()
+
+
+
+
         logger.info(f"✅ Loaded {len(df_train)} records from database")
         
     except Exception as e:
