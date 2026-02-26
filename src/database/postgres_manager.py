@@ -79,6 +79,10 @@ class DatabaseManager:
                 params={"start_date": start_date, "end_date": end_date}
             )
             self.logger.info(f"{len(df)} data obtained from {table_name}")
+            #DEBUG
+            self.logger.info(f"Returning DataFrame with columns: {df.columns.tolist()}")
+
+
             return df
         
         except Exception as e:
