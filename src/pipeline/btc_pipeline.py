@@ -34,6 +34,8 @@ class BTCDataPipeline:
         """Retrieve historical BTC prices from database for training."""
         logger.info(f"Retrieving data from {start_date} to {end_date} from database...")
         df = self.db_manager.get_btc_prices(start_date, end_date)
+        #DEBUG
+        #self.logger.info(f"Columns in DataFrame: {df.columns.tolist()}")
         return df
     
     def predict_training_data(
