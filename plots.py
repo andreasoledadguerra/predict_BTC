@@ -207,10 +207,19 @@ class BTCPlotter:
         
         
       # Intervalo de confianza (sombreado)
-        ax_main.fill_between(future_dates,
-                             predictions - 1.96 * std_error,
-                             predictions + 1.96 * std_error,
-                             color=color, alpha=0.15, label='95% Confidence Interval', zorder=2)    
+        #errors = y - y_pred_train
+        #std_error = np.std(errors)
+        #n_future = len(predictions)
+#
+        #time_factor = np.sqrt(np.arange(1, n_future + 1))
+#
+        #ci_lower = predictions - 1.96 * std_error * time_factor
+        #ci_upper = predictions + 1.96 * std_error * time_factor
+        #
+        #ax_main.fill_between(future_dates,
+                             #ci_lower - 1.96 * std_error,
+                             #ci_upper + 1.96 * std_error,
+                             #color=color, alpha=0.15, label='95% Confidence Interval (growing)', zorder=2)    
 
 
         # Transition point
@@ -245,11 +254,16 @@ class BTCPlotter:
         # ---- METRICS PLOT: Error Distribution ----
         # Calculate training errors
         errors = y - y_pred_train
-        ax_metrics.hist(errors, bins=30, alpha=0.7, color=color, edgecolor='black')
+        std_error = np.std(errors)
+        standardized_errors = errors / std_error #z-scores
+
+        ax_metrics.hist(standardized_errors, bins=30, alpha=0.7, color=color, edgecolor='black',density=True)
         ax_metrics.axvline(x=0, color='black', linestyle='--', linewidth=1.5)
-        ax_metrics.set_title(f'Error Distribution (Training) - {model_name}', fontsize=12, fontweight='bold')
-        ax_metrics.set_xlabel('Error (USD)')
-        ax_metrics.set_ylabel('Frequency')
+        ax_metrics.axvline(x=-1.96 , color='red' , linestyle=':', linewidth=1, alpha=0.7, label='±1.96σ')
+        ax_metrics.axvline(x= 1.96, color= 'red', linestyle=':', linewidth=1, alpha=0.7)
+        ax_metrics.set_title(f'Standardized Residuals - {model_name}')
+        ax_metrics.set_xlabel('Standardized Error (z-score)')
+        ax_metrics.set_ylabel('Density')
         ax_metrics.grid(True, alpha=0.3)
 
         # Stats box
