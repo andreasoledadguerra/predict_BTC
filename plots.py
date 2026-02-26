@@ -207,19 +207,19 @@ class BTCPlotter:
         
         
       # Intervalo de confianza (sombreado)
-        #errors = y - y_pred_train
-        #std_error = np.std(errors)
-        #n_future = len(predictions)
-#
-        #time_factor = np.sqrt(np.arange(1, n_future + 1))
-#
-        #ci_lower = predictions - 1.96 * std_error * time_factor
-        #ci_upper = predictions + 1.96 * std_error * time_factor
-        #
-        #ax_main.fill_between(future_dates,
-                             #ci_lower - 1.96 * std_error,
-                             #ci_upper + 1.96 * std_error,
-                             #color=color, alpha=0.15, label='95% Confidence Interval (growing)', zorder=2)    
+        errors = y - y_pred_train
+        std_error = np.std(errors)
+        n_future = len(predictions)
+
+        time_factor = np.sqrt(np.arange(1, n_future + 1))
+
+        ci_lower = predictions - 1.96 * std_error * time_factor
+        ci_upper = predictions + 1.96 * std_error * time_factor
+        
+        ax_main.fill_between(future_dates,
+                             ci_lower - 1.96 * std_error,
+                             ci_upper + 1.96 * std_error,
+                             color=color, alpha=0.15, label='95% Confidence Interval (growing)', zorder=2)    
 
 
         # Transition point
