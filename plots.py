@@ -258,7 +258,7 @@ class BTCPlotter:
             )
         
         
-      # Intervalo de confianza (sombreado)
+      # Confidence interval
         errors = y - y_pred_train
         std_error = np.std(errors)
         n_future = len(predictions)
@@ -269,8 +269,8 @@ class BTCPlotter:
         ci_upper = predictions + 1.96 * std_error * time_factor
         
         ax_main.fill_between(future_dates,
-                             ci_lower - 1.96 * std_error,
-                             ci_upper + 1.96 * std_error,
+                             ci_lower,
+                             ci_upper,
                              color=color, alpha=0.15, label='95% Confidence Interval (growing)', zorder=2)    
 
 
