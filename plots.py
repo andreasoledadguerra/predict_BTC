@@ -319,15 +319,36 @@ class BTCPlotter:
         ax_metrics.grid(True, alpha=0.3)
 
         # Stats box
-        stats_text = (f'MAE: ${mae:,.2f}\n'
-                  f'RMSE: ${rmse:,.2f}\n'
-                  f'R²: {r2:.4f}\n'
-                  f'Std Error: ${std_error:,.2f}')
+        #stats_text = (f'MAE: ${mae:,.2f}\n'
+        #          f'RMSE: ${rmse:,.2f}\n'
+        #          f'R²: {r2:.4f}\n'
+        #          f'Std Error: ${std_error:,.2f}')
+        #ax_metrics.text(0.95, 0.95, stats_text,
+        #            transform=ax_metrics.transAxes,
+        #            verticalalignment='top', horizontalalignment='right',
+        #            bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8),
+        #            fontsize=9)
+        std_error = np.std(model_data['y'] - model_data['y_pred_train'])  # training standard error
+        stats_text = (f'TRAIN:\n'
+                      f'MAE: ${model_data["mae_train"]:,.2f}\n'
+                      f'RMSE: ${model_data["rmse_train"]:,.2f}\n'
+                      f'R²: {model_data["r2_train"]:.4f}\n'
+                      f'Std Error: ${std_error:,.2f}')
+
+        if 'mae_val' in model_data and model_data['mae_val'] is not None:
+            stats_text += (f'\n\nVALIDATION:\n'
+                           f'MAE: ${model_data["mae_val"]:,.2f}\n'
+                           f'RMSE: ${model_data["rmse_val"]:,.2f}\n'
+                           f'R²: {model_data["r2_val"]:.4f}')
+
         ax_metrics.text(0.95, 0.95, stats_text,
-                    transform=ax_metrics.transAxes,
-                    verticalalignment='top', horizontalalignment='right',
-                    bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8),
-                    fontsize=9)
+                        transform=ax_metrics.transAxes,
+                        verticalalignment='top', horizontalalignment='right',
+                        bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8),
+                        fontsize=9)
+
+
+
         
         # Save figure
         #plt.tight_layout()
