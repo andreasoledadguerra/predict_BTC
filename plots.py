@@ -225,25 +225,6 @@ class BTCPlotter:
                 zorder=7
     )
 
-        #df_train = df.iloc[:-len(df_val)] if df_val is not None else df
-        #if df_val is not None and not df_val.empty:
-        #    val_prices = df_val['price_usd'].values[:len(future_dates)]
-        ## Historical data
-        #    ax_main.plot(
-        #        future_dates[:len(val_prices)], 
-        #        val_prices,
-        #        color='#2E86AB', 
-        #        linewidth=2.5,
-        #        linestyle='-',
-        #        alpha=0.9,
-        #        label='Real BTC Price', 
-        #        zorder=8
-        #    )
-        
-        #n_lags = model_data['predictor'].n_lags
-
-        #dates_train = df['date'].iloc[n_lags:].values
-
         start_idx = len(df) - len(model_data['y_pred_train'])
 
         dates_train = df['date'].iloc[start_idx:].values
