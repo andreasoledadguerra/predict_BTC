@@ -86,13 +86,14 @@ class BTCPlotter:
             raise ValueError(f"Unknown model type: {model_type}")
 
         df = df.sort_values('date').reset_index(drop=True)
+        df_train = df.iloc[:-n_days_future].copy() #train data
+        df_val = df.iloc[-n_days_future:].copy() #ground truth 
 
-        
-        X, y, _ = predictor.prepare_training_data(df)
+        X, y, _ = predictor.prepare_training_data(df_train)
 
-        ##
-        history_size =min(200, len(df))
-        extended_history = df['price_usd'].values[-history_size:].copy()
+        # Extended history for the first prediction (needed for rolling windows)
+        history_size =min(200, len(df_train))
+        extended_history = df_train['price_usd'].values[-history_size:].copy()
 
         ##
         #extended_prices = df['price_usd'].values[-20]
@@ -100,27 +101,36 @@ class BTCPlotter:
         # Train
         predictor.train(X, y)
 
+        # Model trainig predictions (for plotting the fit)
         X_scaled = predictor.scaler.transform(X)
-
         y_pred_train = predictor.model.predict(X_scaled)
 
-        # Metrics
-        r2 = predictor.model.score(X_scaled, y)
-        mae = np.mean(np.abs(y - y_pred_train))
-        rmse = np.sqrt(np.mean((y - y_pred_train) ** 2))
+        # Metrics in train
+        r2_train = predictor.model.score(X_scaled, y)
+        mae_train = np.mean(np.abs(y - y_pred_train))
+        rmse_train = np.sqrt(np.mean((y - y_pred_train) ** 2))
 
-        # PREDICCIÓN: pasamos explícitamente los últimos precios
-        predictions = predictor.predict_future(n_days_future, last_prices=extended_history)
+        # Predictions about the validation period (future)
+        predictions_val = predictor.predict_future(n_days_future, last_prices=extended_history)
 
-        # Generate future dates
-        last_date = df['date'].iloc[-1]
+        # Metrics about validation ----------------------------------
+        y_val = df_val['price_usd'].values[:len(predictions_val)]
+        mae_val = np.mean(np.abs(y_val - predictions_val))
+        rmse_val = np.sqrt(np.mean((y_val - predictions_val) ** 2))
+        ss_res = np.sum((y_val - predictions_val) ** 2)
+        ss_tot = np.sum((y_val - np.mean(y_val)) ** 2)
+        r2_val = 1 - (ss_res / ss_tot) if ss_tot != 0 else np.nan
+        # ------------------------------------------------------------
+
+
+        # Generate future dates for the plot
+        last_date = df_train['date'].iloc[-1]
         future_dates = pd.date_range(
             start=last_date + timedelta(days=1),
             periods=n_days_future,
             freq='D'
         )
 
-        last_price = df['price_usd'].iloc[-1]
 
         # LOGS para comparar coeficientes (solo si el modelo tiene coef_)
         if hasattr(predictor.model, 'coef_'):
@@ -133,17 +143,18 @@ class BTCPlotter:
             'X': X,
             'y': y,
             'y_pred_train': y_pred_train,
-            'predictions': predictions,
-            'r2_score': r2,
-            'mae': mae ,
-            'rmse': rmse,
+            'predictions': predictions_val,
+            'r2_score': r2_train,
+            'mae': mae_train ,
+            'rmse': rmse_train,
             'future_dates': future_dates,
             'model_name': model_name,
             'last_date': last_date,
-            'last_price': last_price,
+            'last_price': df_train['price_usd'].iloc[-1],
             'predictor': predictor,
             'coef': predictor.model.coef_ if hasattr(predictor.model, 'coef_') else None,
-            'intercept': predictor.model.intercept_ if hasattr(predictor.model, 'intercept_') else None
+            'intercept': predictor.model.intercept_ if hasattr(predictor.model, 'intercept_') else None,
+            'df_val': df_val
         }
 
 
@@ -179,11 +190,55 @@ class BTCPlotter:
         )
         
         # ---- MAIN PLOT: Historical + Predictions ----
+        df_val = model_data.get('df_val')
+
         # Historical data
         ax_main.plot(
             df['date'], df['price_usd'],
-            color='#2E86AB', linewidth=2.5, label='Real BTC Price', zorder=5, alpha=0.8
-        )
+            color='#2E86AB', linewidth=2.5, 
+            label='Real BTC Price', zorder=5, alpha=0.8
+)
+        # Validation
+
+        if df_val is not None and not df_val.empty:
+
+            # Get the last historical point
+            last_train_date = df.iloc[:-len(df_val)]['date'].iloc[-1]
+            last_train_price = df.iloc[:-len(df_val)]['price_usd'].iloc[-1]
+
+            # Concatenate last point with initial one of df_val
+            bridge_point = pd.DataFrame({
+                'date': [last_train_date],
+                'price_usd': [last_train_price]
+            })
+
+            df_val_connected = pd.concat([bridge_point, df_val]).reset_index(drop=True)
+
+
+            ax_main.plot(
+                df_val_connected['date'], df_val_connected['price_usd'],
+                color='#2E86AB',        
+                linewidth=2.5,
+                linestyle='-',
+                alpha=0.9,
+                label='Real BTC Price (Validation)',
+                zorder=7
+    )
+
+        #df_train = df.iloc[:-len(df_val)] if df_val is not None else df
+        #if df_val is not None and not df_val.empty:
+        #    val_prices = df_val['price_usd'].values[:len(future_dates)]
+        ## Historical data
+        #    ax_main.plot(
+        #        future_dates[:len(val_prices)], 
+        #        val_prices,
+        #        color='#2E86AB', 
+        #        linewidth=2.5,
+        #        linestyle='-',
+        #        alpha=0.9,
+        #        label='Real BTC Price', 
+        #        zorder=8
+        #    )
         
         #n_lags = model_data['predictor'].n_lags
 
@@ -204,6 +259,22 @@ class BTCPlotter:
             future_dates, predictions,
             color='red', linestyle='--', linewidth=2,
                  label=f'{model_name} Future Prediction', zorder=6)
+        
+    
+        df_val = model_data.get('df_val')
+
+
+        #quizá hay q borrar este bloque
+        if df_val is not None and not df_val.empty:
+            ax_main.plot(
+            df_val['date'], df_val['price_usd'],
+            color='#2E86AB',        
+            linewidth=2.5,
+            linestyle='-',
+            alpha=0.8,
+            label='Real BTC Price (Validation)',
+            zorder=7
+            )
         
         
       # Intervalo de confianza (sombreado)
