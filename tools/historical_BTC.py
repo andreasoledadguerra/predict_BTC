@@ -1,7 +1,8 @@
 # script para cargar precio histórico del BTC
 
 import pandas as pd
-import sqlite3 
+from sqlalchemy import create_engine
+import os
 
 # Read .csv file
 df= pd.read_csv('BTCUSD_1d_Binance.csv')
@@ -18,4 +19,3 @@ mask = (df['Open time'] >= start_date) & (df['Open time'] <= end_date)
 df_filtered = df.loc[mask]
 
 #print(f"Registros del rango: {len(df_filtered)}")
-
