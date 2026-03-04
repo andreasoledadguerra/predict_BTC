@@ -1,16 +1,17 @@
 # script para cargar precio histórico del BTC
-
+import os
+import logging
 import pandas as pd
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from src.config.settings import get_postgres_settings
 from src.database.postgres_manager import DatabaseManager
+from src.config.logs import configure_logging
 
-
-
-import os
+logger = logging.getLogger(__name__)
 
 load_dotenv()
+configure_logging()
 
 #load settings
 pg_settings = get_postgres_settings()
@@ -44,9 +45,15 @@ df_canonico = pd.DataFrame({
     'asset': 'BTC'
 })
 
+logger.info(f"Filas a insertar: {len(df_canonico)}")
+logger.info("Primeras 3 filas:")
+logger.info(df_canonico.head(3))
+
 df_canonico.to_sql(
     'btc_prices',
     con=engine,
     if_exists='append',
     index=False
 )
+
+logger.info("Datos insertados correctamente en la tabla btc_prices.")
