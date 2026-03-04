@@ -280,13 +280,17 @@ def run_stage2_train_predict(pipeline: BTCDataPipeline, plotter: BTCPlotter):
     ridge_data = results.get('ridge_model')
 
     if linear_data:
-        logger.info(f"\n📊 Linear Regression (R² = {linear_data['r2_score']:.4f}):")
-        for i, pred in enumerate(linear_data['predictions'], start=1):
+        r2_linear = linear_data.get('r2_val', linear_data.get('r2_train', 0.0))
+        logger.info(f"\n📊 Linear Regression (R² = {r2_linear:.4f}):")
+        preds_linear = linear_data.get('predictions_val', [])
+        for i, pred in enumerate(preds_linear, start=1):
             logger.info(f"   Day {i}: ${pred:,.2f}")
 
     if ridge_data:
-        logger.info(f"\n🎯 Ridge Regression (R² = {ridge_data['r2_score']:.4f}, α = {alpha}):")
-        for i, pred in enumerate(ridge_data['predictions'], start=1):
+        r2_ridge = ridge_data.get('r2_val', ridge_data.get('r2_train', 0.0))
+        logger.info(f"\n🎯 Ridge Regression (R² = {r2_ridge:.4f}, α = {alpha}):")
+        preds_ridge = ridge_data.get('predictions_val', [])
+        for i, pred in enumerate(preds_ridge, start=1):
             logger.info(f"   Day {i}: ${pred:,.2f}")
 
     logger.info("\n" + "=" * 60)
