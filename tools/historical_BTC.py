@@ -35,11 +35,18 @@ end_date = '2025-09-30'
 mask = (df['Open time'] >= start_date) & (df['Open time'] <= end_date)
 df_filtered = df.loc[mask].copy()
 
-df_filtered.to_sql(
+
+# Create DataFrame with needed columns
+
+df_canonico = pd.DataFrame({
+    'date': df_filtered['Open time'].dt.date,
+    'price_usd': df_filtered['Close'],
+    'asset': 'BTC'
+})
+
+df_canonico.to_sql(
     'btc_prices',
     con=engine,
     if_exists='append',
     index=False
 )
-
-
