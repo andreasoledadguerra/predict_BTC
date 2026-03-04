@@ -33,7 +33,7 @@ end_date = '2025-09-30'
 
 # Create mask using the column date
 mask = (df['Open time'] >= start_date) & (df['Open time'] <= end_date)
-df_filtered = df.loc[mask]
+df_filtered = df.loc[mask].copy()
 
 df_filtered.to_sql(
     'btc_prices',
