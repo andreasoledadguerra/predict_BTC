@@ -85,9 +85,11 @@ class BTCPlotter:
         else:
             raise ValueError(f"Unknown model type: {model_type}")
 
+
+        # TRAINING DATA
         df = df.sort_values('date').reset_index(drop=True)
-        df_train = df.iloc[:-n_days_future].copy() #train data
-        df_val = df.iloc[-n_days_future:].copy() #ground truth 
+        df_train = df.iloc[:-n_days_future].copy() #train data - last n_days_future
+        df_val = df.iloc[-n_days_future:].copy() # ground truth - last n_days_future
 
         X, y, _ = predictor.prepare_training_data(df_train)
 
@@ -143,10 +145,13 @@ class BTCPlotter:
             'X': X,
             'y': y,
             'y_pred_train': y_pred_train,
-            'predictions': predictions_val,
-            'r2_score': r2_train,
-            'mae': mae_train ,
-            'rmse': rmse_train,
+            'predictions_val': predictions_val,
+            'r2_train': r2_train,
+            'mae_train': mae_train ,
+            'rmse_train': rmse_train,
+            'r2_val': r2_val,
+            'mae_val': mae_val,
+            'rmse_val': rmse_val,
             'future_dates': future_dates,
             'model_name': model_name,
             'last_date': last_date,
@@ -170,10 +175,10 @@ class BTCPlotter:
         # Unpack model data
         y = model_data['y']
         y_pred_train = model_data['y_pred_train']
-        predictions = model_data['predictions']
-        r2 = model_data['r2_score']
-        mae = model_data['mae']
-        rmse = model_data['rmse']
+        predictions_val = model_data['predictions_val']
+        r2_train = model_data['r2_train']
+        mae_train = model_data['mae_train']
+        rmse_train = model_data['rmse_train']
         future_dates = model_data['future_dates']
         last_date = model_data['last_date']
         last_price = model_data['last_price']
@@ -201,7 +206,6 @@ class BTCPlotter:
         # Validation
 
         if df_val is not None and not df_val.empty:
-
             # Get the last historical point
             last_train_date = df.iloc[:-len(df_val)]['date'].iloc[-1]
             last_train_price = df.iloc[:-len(df_val)]['price_usd'].iloc[-1]
@@ -213,8 +217,6 @@ class BTCPlotter:
             })
 
             df_val_connected = pd.concat([bridge_point, df_val]).reset_index(drop=True)
-
-
             ax_main.plot(
                 df_val_connected['date'], df_val_connected['price_usd'],
                 color='#2E86AB',        
@@ -225,48 +227,46 @@ class BTCPlotter:
                 zorder=7
     )
 
+        # Adjust training model
         start_idx = len(df) - len(model_data['y_pred_train'])
-
         dates_train = df['date'].iloc[start_idx:].values
-
         ax_main.plot(
             dates_train, model_data['y_pred_train'],
             color=color, linewidth=2.0, linestyle='-', alpha=0.6,
-            label=f'{model_name} Training Fit (R²={r2:.3f})', zorder=4
+            label=f'{model_name} Training Fit (R²={r2_train:.3f})', zorder=4
     )
         
         # Future predictions
         ax_main.plot(
-            future_dates, predictions,
+            future_dates, predictions_val,
             color='red', linestyle='--', linewidth=2,
                  label=f'{model_name} Future Prediction', zorder=6)
         
     
-        df_val = model_data.get('df_val')
+        #df_val = model_data.get('df_val')
 
 
         #quizá hay q borrar este bloque
-        if df_val is not None and not df_val.empty:
-            ax_main.plot(
-            df_val['date'], df_val['price_usd'],
-            color='#2E86AB',        
-            linewidth=2.5,
-            linestyle='-',
-            alpha=0.8,
-            label='Real BTC Price (Validation)',
-            zorder=7
-            )
+        #if df_val is not None and not df_val.empty:
+        #    ax_main.plot(
+        #    df_val['date'], df_val['price_usd'],
+        #    color='#2E86AB',        
+        #    linewidth=2.5,
+        #    linestyle='-',
+        #    alpha=0.8,
+        #    label='Real BTC Price (Validation)',
+        #    zorder=7
+        #    )
         
         
       # Confidence interval
-        errors = y - y_pred_train
-        std_error = np.std(errors)
-        n_future = len(predictions)
-
+        #errors = y - y_pred_train
+        #std_error = np.std(errors)
+        n_future = len(predictions_val)
         time_factor = np.sqrt(np.arange(1, n_future + 1))
 
-        ci_lower = predictions - 1.96 * std_error * time_factor
-        ci_upper = predictions + 1.96 * std_error * time_factor
+        ci_lower = predictions_val - 1.96 * std_error * time_factor
+        ci_upper = predictions_val + 1.96 * std_error * time_factor
         
         ax_main.fill_between(future_dates,
                              ci_lower,
@@ -293,7 +293,7 @@ class BTCPlotter:
         )
         
         # Main plot configuration
-        ax_main.set_title(f'{model_name} vs Real BTC Price\n{len(predictions)}-Day Prediction{title_suffix}',
+        ax_main.set_title(f'{model_name} vs Real BTC Price\n{len(predictions_val)}-Day Prediction{title_suffix}',
                       fontsize=14, fontweight='bold')
         ax_main.set_xlabel('Date')
         ax_main.set_ylabel('Price (USD)')
@@ -328,7 +328,7 @@ class BTCPlotter:
         #            verticalalignment='top', horizontalalignment='right',
         #            bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8),
         #            fontsize=9)
-        std_error = np.std(model_data['y'] - model_data['y_pred_train'])  # training standard error
+        #std_error = np.std(model_data['y'] - model_data['y_pred_train'])  # training standard error
         stats_text = (f'TRAIN:\n'
                       f'MAE: ${model_data["mae_train"]:,.2f}\n'
                       f'RMSE: ${model_data["rmse_train"]:,.2f}\n'
@@ -346,8 +346,6 @@ class BTCPlotter:
                         verticalalignment='top', horizontalalignment='right',
                         bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8),
                         fontsize=9)
-
-
 
         
         # Save figure
