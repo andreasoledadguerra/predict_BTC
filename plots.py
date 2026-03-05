@@ -1,4 +1,3 @@
-# plot.py
 """
 Visualization script for Bitcoin price prediction models.
 
@@ -242,26 +241,6 @@ class BTCPlotter:
             color='red', linestyle='--', linewidth=2,
                  label=f'{model_name} Future Prediction', zorder=6)
         
-    
-        #df_val = model_data.get('df_val')
-
-
-        #quizá hay q borrar este bloque
-        #if df_val is not None and not df_val.empty:
-        #    ax_main.plot(
-        #    df_val['date'], df_val['price_usd'],
-        #    color='#2E86AB',        
-        #    linewidth=2.5,
-        #    linestyle='-',
-        #    alpha=0.8,
-        #    label='Real BTC Price (Validation)',
-        #    zorder=7
-        #    )
-        
-        
-      # Confidence interval
-        #errors = y - y_pred_train
-        #std_error = np.std(errors)
         n_future = len(predictions_val)
         time_factor = np.sqrt(np.arange(1, n_future + 1))
 
@@ -319,16 +298,6 @@ class BTCPlotter:
         ax_metrics.grid(True, alpha=0.3)
 
         # Stats box
-        #stats_text = (f'MAE: ${mae:,.2f}\n'
-        #          f'RMSE: ${rmse:,.2f}\n'
-        #          f'R²: {r2:.4f}\n'
-        #          f'Std Error: ${std_error:,.2f}')
-        #ax_metrics.text(0.95, 0.95, stats_text,
-        #            transform=ax_metrics.transAxes,
-        #            verticalalignment='top', horizontalalignment='right',
-        #            bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8),
-        #            fontsize=9)
-        #std_error = np.std(model_data['y'] - model_data['y_pred_train'])  # training standard error
         stats_text = (f'TRAIN:\n'
                       f'MAE: ${model_data["mae_train"]:,.2f}\n'
                       f'RMSE: ${model_data["rmse_train"]:,.2f}\n'
