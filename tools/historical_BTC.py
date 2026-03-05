@@ -1,8 +1,7 @@
-# script para cargar precio histórico del BTC
+
 import os
 import logging
 import pandas as pd
-from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from src.config.settings import get_postgres_settings
 from src.database.postgres_manager import DatabaseManager
