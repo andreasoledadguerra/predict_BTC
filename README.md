@@ -8,7 +8,7 @@ The application is designed as an end-to-end data pipeline, covering data acquis
 
 ## Features
 
--Fetches historical Bitcoin price data from CoinGecko
+-Retrieves historical OHLCV data from a local CSV file and the CoinGecko public API
 -Stores retrieved data in a database for reuse and reproducibility
 -Allows flexible date range selection for both data fetching and model training
 -Trains a regression-based model using historical data
