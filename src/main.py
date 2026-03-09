@@ -80,7 +80,6 @@ def run_stage1_fetch(pipeline: BTCDataPipeline, db_manager: DatabaseManager):
     logger.info("=" * 60)
     
     logger.info("\n📋 INSTRUCTIONS:")
-    logger.info("   • Maximum 90 days for CoinGecko free API")
     logger.info("   • Data will be saved to PostgreSQL")
     logger.info("   • Run this FIRST before making predictions")
     
