@@ -92,8 +92,9 @@ Follow the on-screen instructions to:
 - `src/main.py` : CLI script to fetch data and run predictions.
 - `.env` : Environment variables (not committed).
 - `docker-compose.yml` : Docker services definition (database)
-- `plots`: Data visualization.
 - `tools/`:  Scripts for processing and loading canonical data into the PostgreSQL database.
+- `plots`: Data visualization.
+- `plots/`: Save generated plots.
 - `BTCUSD_1d_Binance.csv`: historical OHLCV data.
 - `.gitignore` : Git ignore rules.
 - `requirements.txt` : Python dependencies.
