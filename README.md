@@ -50,11 +50,11 @@ Before running the application make sure you have:
 
 The core Python dependencies include:
 
- - pandas -data manipulation and analysis
- - numpy -numerical computations
- - requests -HTTP requests to external APIs(CoinGecko)
- - psycopg2(or equivalent) - PostgreSQL database driver
- - scikit-learn -regression model training and prediction
+ - pandas -data manipulation and analysis.
+ - numpy -numerical computations.
+ - requests -HTTP requests to external APIs(CoinGecko).
+ - psycopg2(or equivalent) - PostgreSQL database driver.
+ - scikit-learn -regression model training and prediction.
  - SQLAlchemy -database abstraction and ORM
 
  The exact database driver depends on the database configured in Docker.
@@ -82,20 +82,23 @@ Follow the on-screen instructions to:
 
 - `src/` : Core application logic
 - `src/api`: A client for fetching historical Bitcoin price data from the CoinGecko API.
-- `src/db/` : Database-related files and persisted data
-- `src/ml/` : Data models and prediction logic
+- `src/database/` : Database-related files and persisted data.
+- `src/ml/` : Data models and prediction logic.
 - `src/config`: Settings manager for database and API configurations using environment variables.
-- `src/pipeline`: Data pipeline class
+- `src/pipeline`: Data pipeline class.
 - `src/utils`: Utility for converting human-readable dates to Unix timestamps used by APIs.
-- `docker/` : Docker-related configuration
-- `docker/env/` : Docker environment variables
-- `src/main.py` : CLI script to fetch data and run predictions
-- `.env` : Environment variables (not committed)
+- `docker/` : Docker-related configuration.
+- `docker/env/` : Docker environment variables.
+- `src/main.py` : CLI script to fetch data and run predictions.
+- `.env` : Environment variables (not committed).
 - `docker-compose.yml` : Docker services definition (database)
-- `.gitignore` : Git ignore rules
-- `requirements.txt` : Python dependencies
-- `README.md` : Project documentation
-- `LICENSE` : Project license
+- `plots`: Data visualization.
+- `tools/`:  Scripts for processing and loading canonical data into the PostgreSQL database.
+- `BTCUSD_1d_Binance.csv`: historical OHLCV data.
+- `.gitignore` : Git ignore rules.
+- `requirements.txt` : Python dependencies.
+- `README.md` : Project documentation.
+- `LICENSE` : Project license.
 
 
 ## Contributing
