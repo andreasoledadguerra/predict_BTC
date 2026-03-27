@@ -149,7 +149,7 @@ def run_stage1_fetch(pipeline: BTCDataPipeline, db_manager: DatabaseManager):
     except Exception as e:
         logger.error(f"❌ Error in Stage 1: {e}")
         logger.debug(traceback.format_exc())
-        
+
         logger.info("\n" + "-" * 60)
         logger.info("📊 STAGE 1 RESULTS")
         logger.info("-" * 60)
@@ -220,8 +220,8 @@ def run_stage2_train_predict(pipeline: BTCDataPipeline, plotter: BTCPlotter):
         return
 
     # ---- GET PREDICTION DAYS ----
-    days_input = input("\n🔮 How many days do you want to predict? (default: 10): ").strip()
-    predict_days = int(days_input) if days_input and days_input.isdigit() else 10
+    days_input = input("\n🔮 How many days do you want to predict? (default: 3): ").strip()
+    predict_days = int(days_input) if days_input and days_input.isdigit() else 3
 
     # ---- GET RIDGE ALPHA (OPTIONAL) ----
     alpha_input = input("🎛️  Ridge alpha (regularization parameter, default: 1.0): ").strip()

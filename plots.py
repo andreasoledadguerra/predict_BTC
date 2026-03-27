@@ -379,7 +379,7 @@ class BTCPlotter:
     def plot_all(
         self,
         df_real: pd.DataFrame,
-        n_days_future: int = 10,
+        n_days_future: int = 3,
         alpha: float = 1.0
     ) -> Dict[str, str]:
         """
