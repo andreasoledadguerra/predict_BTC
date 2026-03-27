@@ -149,24 +149,7 @@ def run_stage1_fetch(pipeline: BTCDataPipeline, db_manager: DatabaseManager):
     except Exception as e:
         logger.error(f"❌ Error in Stage 1: {e}")
         logger.debug(traceback.format_exc())
-
-
-
-    #try:
-#
-    #    # verificar si los datos ya estaba en la base de datos    
-    #    df = db_manager.get_btc_prices(fetch_start, fetch_end)
-    #    if df != None :
-    #        pass
-    #    else:
-    #        # Fetch data from API
-    #        result_fetch = pipeline.fetch_data(fetch_start, fetch_end)                      
-    #        if result_fetch is None or len(result_fetch) == 0:
-    #            logger.warning("⚠️  No data fetched from CoinGecko")
-            
-        # Save to database
-        #result_save = pipeline.save_data_in_db(result_fetch)
-
+        
         logger.info("\n" + "-" * 60)
         logger.info("📊 STAGE 1 RESULTS")
         logger.info("-" * 60)
