@@ -39,19 +39,31 @@ class DatabaseManager:
     
 
     def save_btc_prices(self, df:pd.DataFrame, table_name: str = "btc_prices") -> int:
-
         try:
-            df.to_sql(
-                table_name,
-                self.engine,
-                if_exists="append",
-                index=False,
-                method='multi',
-                chunksize=1000
-            )
+            required_columns = ['date', 'price_usd', 'volume_usd']
+            if not all(col in df.columns for col in required_columns):
+                raise ValueError(f"DataFrame must contain columns: {required_columns}")
+            
+            #convert date compatible with SQL format
+            df['date'] = pd.to_datetime(df['date']).dt.date
+
+            records = list(df[required_columns].itertuples(index=False, name=None))
+
+
+            insert_query = f"""
+            INSERT INTO {table_name} (date, price_usd, volume_usd)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (date) DO UPDATE SET 
+                price_usd = EXCLUDED.price_usd, 
+                volume_usd = EXCLUDED.volume_usd;
+            """.format(table_name)
+
+            # Execute the block insertion
+            with self.engine.begin() as conn:
+                conn.execute(insert_query, records)
 
             records_saved = len(df)
-            self.logger.info(f"{records_saved} saved records in {table_name}")
+            self.logger.info(f"{records_saved} records upserted into {table_name}")
             return records_saved
         
         except Exception as e:
@@ -66,7 +78,7 @@ class DatabaseManager:
     ) -> pd.DataFrame:
         
         query = text(f"""
-        SELECT date, price_usd 
+        SELECT date, price_usd, volume_usd
         FROM {table_name} 
         WHERE date BETWEEN :start_date AND :end_date 
         ORDER BY date
