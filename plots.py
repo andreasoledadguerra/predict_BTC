@@ -19,6 +19,7 @@ from sklearn.linear_model import Ridge
 from datetime import timedelta
 from src.api.coingecko_client import CoinGeckoClient
 from src.ml.btc_predictor import BTCPredictor
+from src.ml.optimization_ridge import optimize_ridge_alpha
 from src.pipeline.btc_pipeline import BTCDataPipeline
 
 
