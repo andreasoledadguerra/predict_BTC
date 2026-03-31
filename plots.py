@@ -350,9 +350,11 @@ class BTCPlotter:
     
     def plot_model_ridge(
             self, 
-            df: pd.DataFrame, 
+            df_train: pd.DataFrame,
+            df_val: Optional[pd.DataFrame] = None, 
             n_days_future: int,
-            alpha: int = 1.0
+            alpha: int = 1.0,
+            optimize_alpha: bool = True
         ) -> str:
             """
             Generate plot for Ridge Regression model.
@@ -368,12 +370,23 @@ class BTCPlotter:
                 Path to saved PNG file
             """
             logger.info(f"\n📊 Training Ridge Regression model (α={alpha})...")
-            model_data = self._train_and_predict(df, 'ridge', n_days_future, alpha=alpha)
+            if optimize_alpha:
+                temp_predictor = BTCPredictor(n_lags=self.n_lags, windows=self.windows)
+                X, y, _ = temp_predictor.prepare_training_data(df_train)
+                best_alpha, best_score = optimize_ridge_alpha(X, y)
+
+                logger.info(f"Optimization complete: best alpha = {best_alpha} (CV R² = {best_score:.4f})")
+                alpha = best_alpha
+
+
+
+            model_data = self._train_and_predict(df_train, 'ridge', n_days_future, alpha=alpha, df_val=df_val)
             self.last_ridge = model_data
             suffix= f" | α={alpha} "
             
             return self._plot_prediction_with_metrics(
-                df=df,
+                df=df_train,
+                df_val=df_val,
                 model_data=model_data,
                 color=self.colors['ridge'],
                 filename="btc_ridge_comparison.png",
