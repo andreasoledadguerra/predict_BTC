@@ -74,6 +74,7 @@ class BTCPlotter:
         df: pd.DataFrame, 
         model_type: str,
         n_days_future: int,
+        df_val: Optional[pd.DataFrame] = None, 
         **model_kwargs
     ) -> Dict:
 
@@ -90,9 +91,23 @@ class BTCPlotter:
 
 
         # TRAINING DATA
+        #df = df.sort_values('date').reset_index(drop=True)
+        #df_train = df.iloc[:-n_days_future].copy() #train data - last n_days_future
+        #df_val = df.iloc[-n_days_future:].copy() # ground truth - last n_days_future
+
         df = df.sort_values('date').reset_index(drop=True)
-        df_train = df.iloc[:-n_days_future].copy() #train data - last n_days_future
-        df_val = df.iloc[-n_days_future:].copy() # ground truth - last n_days_future
+
+        if df_val is not None:
+            # Usar el DataFrame externo como validación
+            df_train = df.copy()
+            # Asegurar que df_val también esté ordenado
+            df_val = df_val.sort_values('date').reset_index(drop=True)
+            # Tomar solo los primeros n_days_future días de df_val para comparar con las predicciones
+            df_val_ground = df_val.iloc[:n_days_future].copy()
+        else:
+            # División interna: los últimos n_days_future días son validación
+            df_train = df.iloc[:-n_days_future].copy()
+            df_val_ground = df.iloc[-n_days_future:].copy()
 
         X, y, _ = predictor.prepare_training_data(df_train)
 
