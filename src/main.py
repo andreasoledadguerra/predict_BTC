@@ -224,12 +224,14 @@ def run_stage2_train_predict(pipeline: BTCDataPipeline, plotter: BTCPlotter):
     predict_days = int(days_input) if days_input and days_input.isdigit() else 3
 
     # ---- GET RIDGE ALPHA (OPTIONAL) ----
-    alpha_input = input("🎛️  Ridge alpha (regularization parameter, default: 1.0): ").strip()
-    alpha = float(alpha_input) if alpha_input else 1.0
+    #alpha_input = input("🎛️  Ridge alpha (regularization parameter, default: 1.0): ").strip()
+    #alpha = float(alpha_input) if alpha_input else 1.0
+    optimize_input = input("\n🎯 Optimize Ridge alpha automatically? (y/n, default: y): ").strip().lower()
+    optimize_alpha = optimize_input != 'n'   # default True 
 
     logger.info(f"\n📊 Training models with data from {train_start} to {train_end}")
     logger.info(f"🔮 Predicting {predict_days} days into the future")
-    logger.info(f"🎯 Ridge alpha: {alpha}")
+    logger.info(f"🎯 Ridge alpha: {optimize_alpha}")
 
 
     logger.info("\n" + "-" * 60)
