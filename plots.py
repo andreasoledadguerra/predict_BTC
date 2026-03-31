@@ -331,16 +331,18 @@ class BTCPlotter:
 
     def plot_model_lr(
             self, 
-            df: pd.DataFrame, 
+            df_train: pd.DataFrame, 
+            df_val: Optional[pd.DataFrame] = None,
             n_days_future: int
         ) -> str:
     
             logger.info(f"\n📊 Training Linear Regression model...")
-            model_data = self._train_and_predict(df, 'linear', n_days_future)
-            self.last_linear = model_data
+            model_data = self._train_and_predict(df_train, 'linear', n_days_future, df_val= df_val)
+            #self.last_linear = model_data
             
             return self._plot_prediction_with_metrics(
-                df=df,
+                df=df_train,
+                df_val=df_val,
                 model_data=model_data,
                 color=self.colors['linear'],
                 filename="btc_linear_comparison.png"
