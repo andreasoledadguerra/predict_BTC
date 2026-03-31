@@ -399,7 +399,8 @@ class BTCPlotter:
         self,
         df_real: pd.DataFrame,
         n_days_future: int = 3,
-        alpha: float = 1.0
+        alpha: float = 1.0,
+        optimize_alpha: bool = True
     ) -> Dict[str, str]:
         """
         Generate all plots: linear model, ridge model, and comparison.
@@ -420,6 +421,16 @@ class BTCPlotter:
         logger.info("🚀 GENERATING ALL BTC PREDICTION PLOTS")
         logger.info("="*60)
         
+        # Sort and divide chronologically
+        df_real = df_real.sort_values('date').reset_index(drop=True)
+        n = len(df_real)
+        split_idx = int(n * 0.8)  # 80% train, 20% validation
+        df_train = df_real.iloc[:split_idx].copy()
+        df_val = df_real.iloc[split_idx:].copy()
+
+        logger.info(f"Split: {len(df_train)} train, {len(df_val)} validation samples")
+
+
         result = {
              'paths': {},
              'linear_model': None,
@@ -429,8 +440,12 @@ class BTCPlotter:
         
         # Plot 1: Linear Regression
         try:
-            logger.info("\n[2/4] Plotting Linear Regression model...")
-            result['paths']['linear'] = self.plot_model_lr(df_real, n_days_future)
+            logger.info("\n[1/2] Plotting Linear Regression model...")
+            result['paths']['linear'] = self.plot_model_lr(
+                df_train=df_train,
+                df_val=df_val,
+                n_days_future=n_days_future
+                )
             result['linear_model'] = self.last_linear
         except Exception as e:
             print(f"❌ Error in plot_model_lr: {e}")
@@ -439,8 +454,14 @@ class BTCPlotter:
         
         # Plot 2: Ridge model
         try:
-            logger.info("\n[3/4] Plotting Ridge Regression model...")
-            result['paths']['ridge'] = self.plot_model_ridge(df_real, n_days_future, alpha)
+            logger.info("\n[2/2] Plotting Ridge Regression model...")
+            result['paths']['ridge'] = self.plot_model_ridge(
+                df_train=df_train,
+                df_val=df_val, 
+                n_days_future=n_days_future,
+                alpha=alpha,
+                optimize_alpha=optimize_alpha
+                )
             result['ridge_model'] = self.last_ridge
         except Exception as e:
             print(f"❌ Error in plot_model_ridge: {e}")
