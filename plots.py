@@ -46,6 +46,8 @@ class BTCPlotter:
         self.output_dir = output_dir 
         self.n_lags = n_lags
         self.windows = windows or [7, 14]
+        self.last_linear = None
+        self.last_ridge = None
         self.btc_predictor = BTCPredictor
         self.pipeline = BTCDataPipeline
         self.output_dir = output_dir
@@ -134,7 +136,7 @@ class BTCPlotter:
         predictions_val = predictor.predict_future(n_days_future, last_prices=extended_history)
 
         # Metrics about validation ----------------------------------
-        y_val = df_val['price_usd'].values[:len(predictions_val)]
+        y_val = df_val_ground['price_usd'].values[:len(predictions_val)]
         mae_val = np.mean(np.abs(y_val - predictions_val))
         rmse_val = np.sqrt(np.mean((y_val - predictions_val) ** 2))
         ss_res = np.sum((y_val - predictions_val) ** 2)
@@ -164,6 +166,8 @@ class BTCPlotter:
             'y': y,
             'y_pred_train': y_pred_train,
             'predictions_val': predictions_val,
+            'y_val': y_val,
+            'df_val_ground': df_val_ground,
             'r2_train': r2_train,
             'mae_train': mae_train ,
             'rmse_train': rmse_train,
@@ -177,7 +181,6 @@ class BTCPlotter:
             'predictor': predictor,
             'coef': predictor.model.coef_ if hasattr(predictor.model, 'coef_') else None,
             'intercept': predictor.model.intercept_ if hasattr(predictor.model, 'intercept_') else None,
-            'df_val': df_val
         }
 
 
@@ -187,6 +190,7 @@ class BTCPlotter:
         model_data: Dict,
         color: str,
         filename: str,
+        df_val_ground: Optional[pd.DataFrame] = None,
         title_suffix: str = ""
     ) -> str:
    
@@ -194,6 +198,7 @@ class BTCPlotter:
         y = model_data['y']
         y_pred_train = model_data['y_pred_train']
         predictions_val = model_data['predictions_val']
+        y_val = model_data.get('y_val')
         r2_train = model_data['r2_train']
         mae_train = model_data['mae_train']
         rmse_train = model_data['rmse_train']
@@ -211,6 +216,14 @@ class BTCPlotter:
             height_ratios=[3, 1],
             gridspec_kw={'hspace': 0.3}
         )
+
+        if df_val_ground is not None and y_val is not None:
+            ax_main.plot(df_val_ground['date'], df_val_ground['price_usd'],
+                         color='black', marker='o', linestyle='none', markersize=4,
+                         label='Real BTC Price (Validation)')
+            ax_main.plot(df_val_ground['date'], predictions_val,
+                         color=color, linestyle='--', marker='s', markersize=4,
+                         label=f'{model_name} Validation Prediction')
         
         # ---- MAIN PLOT: Historical + Predictions ----
         df_val = model_data.get('df_val')
@@ -353,12 +366,16 @@ class BTCPlotter:
         ) -> str:
     
             logger.info(f"\n📊 Training Linear Regression model...")
-            model_data = self._train_and_predict(df_train, 'linear', n_days_future, df_val= df_val)
+            model_data = self._train_and_predict(
+                df_train,
+                'linear', 
+                n_days_future, 
+                df_val= df_val
+            )
             self.last_linear = model_data
-            
             return self._plot_prediction_with_metrics(
                 df=df_train,
-                df_val=df_val,
+                df_val_ground=model_data.get('df_val_ground'), #using the validations's  ground truth 
                 model_data=model_data,
                 color=self.colors['linear'],
                 filename="btc_linear_comparison.png"
@@ -408,7 +425,7 @@ class BTCPlotter:
             
             return self._plot_prediction_with_metrics(
                 df=df_train,
-                df_val=df_val,
+                df_val_ground=model_data.get('df_val_ground'),
                 model_data=model_data,
                 color=self.colors['ridge'],
                 filename="btc_ridge_comparison.png",
@@ -444,13 +461,12 @@ class BTCPlotter:
         
         # Sort and divide chronologically
         df_real = df_real.sort_values('date').reset_index(drop=True)
-        n = len(df_real)
-        split_idx = int(n * 0.8)  # 80% train, 20% validation
+        #n = len(df_real)
+        split_idx = int(len(df_real) * 0.8)  # 80% train, 20% validation
         df_train = df_real.iloc[:split_idx].copy()
         df_val = df_real.iloc[split_idx:].copy()
 
         logger.info(f"Split: {len(df_train)} train, {len(df_val)} validation samples")
-
 
         result = {
              'paths': {},
