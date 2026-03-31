@@ -33,7 +33,7 @@ class BTCPlotter:
     plus a comparison plot showing both models together.
     """
 
-    def __init__(self, df: pd.DataFrame, output_dir: str = "plots"):
+    def __init__(self, df: pd.DataFrame, output_dir: str = "plots", n_lags: int =7, windows: List[int] = None):
         """
         Initialize the plotter.
         
@@ -42,6 +42,9 @@ class BTCPlotter:
             output_dir: Directory to save plot images
         """
         self.df = df
+        self.output_dir = output_dir 
+        self.n_lags = n_lags
+        self.windows = windows or [7, 14]
         self.btc_predictor = BTCPredictor
         self.pipeline = BTCDataPipeline
         self.output_dir = output_dir
