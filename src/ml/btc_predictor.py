@@ -24,17 +24,45 @@ class BTCPredictor:
         self.last_prices = None
         self.logger = logging.getLogger(__name__)
 
-    def _create_features(self, prices: np.ndarray) -> pd.DataFrame:
+    def _create_features(self, prices: np.ndarray, volumes: np.ndarray = None) -> pd.DataFrame:
 
         df = pd.DataFrame({'price': prices})
+        if volumes is not None:
+            df['volume'] = volumes
+        
+        # Returns
+        returns = df['price'].pct_change()
+        df['return_1d'] = returns
+        df['return_7d'] = returns.rolling(7).sum()
+        df['momentum'] = df['price'] / df['price'].shift(7) - 1
 
+        #Volatility
+        df['volatility_7d'] = returns.rolling(7).std()
+
+        # RSI (14 days)
+        delta = df['price'].diff()
+        gain = delta.clip(lower=0).rolling(14).mean()
+        loss = (-delta.clip(upper=0)).rolling(14).mean()
+        rs = gain / loss
+        df['rsi'] = 100 - (100 / (1 + rs))
+
+        # MACD (12,26,9)
+        ema12 = df['price'].ewm(span=12, adjust=False).mean()
+        ema26 = df['price'].ewm(span=26, adjust=False).mean()
+        df['macd'] = ema12 - ema26
+        df['macd_signal'] = df['macd'].ewm(span=9, adjust=False).mean()
+        df['macd_hist'] = df['macd'] - df['macd_signal']
+
+        # Lags
         for lag in range(1, self.n_lags + 1):
             df[f'lag_{lag}'] = df['price'].shift(lag)
 
+        # Rollings means / stds
         for w in self.windows:
-            df[f'rolling_mean_{w}'] = df['price'].shift(1).rolling(window=w, min_periods=1).mean() # .shift(1) for avoid data leakage
-            df[f'rolling_std_{w}'] = df['price'].shift(1).rolling(window=w, min_periods=2).std()
+            df[f'rolling_mean_{w}'] = df['price'].shift(1).rolling(w).mean() # .shift(1) to avoid data leakage
+            df[f'rolling_std_{w}'] = df['price'].shift(1).rolling(w).std()
 
+        # Delete NaN rows
         df.dropna(inplace=True)
 
         return df
@@ -43,7 +71,9 @@ class BTCPredictor:
 
     def prepare_training_data(self, df: pd.DataFrame) -> tuple:
         prices = df['price_usd'].values
+        volumes = df['volume_usd'].values if 'volume_usd' in df.columns else None
         min_required = self.n_lags + 1
+
         if len(prices) < min_required:
             raise ValueError(f"Not enough data: need at least {min_required} prices, got {len(prices)}")
 
@@ -51,7 +81,7 @@ class BTCPredictor:
         last_prices = prices[-self.n_lags:].copy()
         self.last_prices = last_prices
 
-        feature_df = self._create_features(prices)
+        feature_df = self._create_features(prices,volumes)
         if len(feature_df) == 0:
            raise ValueError(f"Feature creation failed: need at least {min_required} prices, got {len(prices)}")
 
