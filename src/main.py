@@ -242,7 +242,7 @@ def run_stage2_train_predict(pipeline: BTCDataPipeline, plotter: BTCPlotter):
         results = plotter.plot_all(
             df_real=df_train,
             n_days_future=predict_days,
-            alpha=alpha
+            alpha=alpha,
             optimize_alpha=optimize_alpha
         )
 
