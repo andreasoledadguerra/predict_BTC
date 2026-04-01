@@ -59,7 +59,7 @@ def initialize_components():
     pipeline = BTCDataPipeline(api_client, db_manager, predictor)
 
     # Initialize plotter (always available)
-    plotter = BTCPlotter(df=None, output_dir="plots")  # df will be set later
+    plotter = BTCPlotter(df=None, output_dir="plots", n_lags=7, windows=[7,14])  # df will be set later
 
     logger.info("✅ All components initialized successfully")
     
@@ -224,8 +224,8 @@ def run_stage2_train_predict(pipeline: BTCDataPipeline, plotter: BTCPlotter):
     predict_days = int(days_input) if days_input and days_input.isdigit() else 3
 
     # ---- GET RIDGE ALPHA (OPTIONAL) ----
-    #alpha_input = input("🎛️  Ridge alpha (regularization parameter, default: 1.0): ").strip()
-    #alpha = float(alpha_input) if alpha_input else 1.0
+    alpha_input = input("🎛️  Ridge alpha (regularization parameter, default: 1.0): ").strip()
+    alpha = float(alpha_input) if alpha_input else 1.0
     optimize_input = input("\n🎯 Optimize Ridge alpha automatically? (y/n, default: y): ").strip().lower()
     optimize_alpha = optimize_input != 'n'   # default True 
 
@@ -243,6 +243,7 @@ def run_stage2_train_predict(pipeline: BTCDataPipeline, plotter: BTCPlotter):
             df_real=df_train,
             n_days_future=predict_days,
             alpha=alpha
+            optimize_alpha=optimize_alpha
         )
 
         logger.info("\n✅ Plots generated successfully:")
