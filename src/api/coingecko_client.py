@@ -75,6 +75,15 @@ class CoinGeckoClient:
         raw_data = response.json()
         df = self.parse_price_data(raw_data)
         self.logger.info(f" {len(df)} obtained records")
+
+        data = response.json()
+        prices = data['prices']
+        volumes = data['total_volumes']
+        df = pd.DataFrame({
+            'date' : [datetime.fromtimestamp(p[0]/1000).date() for p in prices],
+            'price_usd': [p[1] for p in prices],
+            'volume_usd': [v[1] for v in volumes]
+        })
         return df
     
 
