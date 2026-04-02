@@ -27,31 +27,37 @@ class BTCPredictor:
     def _create_features(self, prices: np.ndarray, volumes: np.ndarray = None) -> pd.DataFrame:
 
         df = pd.DataFrame({'price': prices})
-        if volumes is not None:
-            df['volume'] = volumes
+
+        if volumes is not None and len(volumes) == len(prices):
+            try:
+                volumes_num = pd.to_numeric(volumes, errors='coerce')
+                if not np.isnan(volumes).all():
+                    df['volume'] = volumes
+            except Exception as e:
+                self.logger.warning(f"No se pudo convertir volumen a numérico: {e}")  
         
         # Returns
-        returns = df['price'].pct_change()
-        df['return_1d'] = returns
-        df['return_7d'] = returns.rolling(7).sum()
-        df['momentum'] = df['price'] / df['price'].shift(7) - 1
-
-        #Volatility
-        df['volatility_7d'] = returns.rolling(7).std()
-
-        # RSI (14 days)
-        delta = df['price'].diff()
-        gain = delta.clip(lower=0).rolling(14).mean()
-        loss = (-delta.clip(upper=0)).rolling(14).mean()
-        rs = gain / loss
-        df['rsi'] = 100 - (100 / (1 + rs))
-
-        # MACD (12,26,9)
-        ema12 = df['price'].ewm(span=12, adjust=False).mean()
-        ema26 = df['price'].ewm(span=26, adjust=False).mean()
-        df['macd'] = ema12 - ema26
-        df['macd_signal'] = df['macd'].ewm(span=9, adjust=False).mean()
-        df['macd_hist'] = df['macd'] - df['macd_signal']
+        #returns = df['price'].pct_change()
+        #df['return_1d'] = returns
+        #df['return_7d'] = returns.rolling(7).sum()
+        #df['momentum'] = df['price'] / df['price'].shift(7) - 1
+#
+        ##Volatility
+        #df['volatility_7d'] = returns.rolling(7).std()
+#
+        ## RSI (14 days)
+        #delta = df['price'].diff()
+        #gain = delta.clip(lower=0).rolling(14).mean()
+        #loss = (-delta.clip(upper=0)).rolling(14).mean()
+        #rs = gain / loss
+        #df['rsi'] = 100 - (100 / (1 + rs))
+#
+        ## MACD (12,26,9)
+        #ema12 = df['price'].ewm(span=12, adjust=False).mean()
+        #ema26 = df['price'].ewm(span=26, adjust=False).mean()
+        #df['macd'] = ema12 - ema26
+        #df['macd_signal'] = df['macd'].ewm(span=9, adjust=False).mean()
+        #df['macd_hist'] = df['macd'] - df['macd_signal']
 
         # Lags
         for lag in range(1, self.n_lags + 1):
@@ -62,8 +68,16 @@ class BTCPredictor:
             df[f'rolling_mean_{w}'] = df['price'].shift(1).rolling(w).mean() # .shift(1) to avoid data leakage
             df[f'rolling_std_{w}'] = df['price'].shift(1).rolling(w).std()
 
+        self.logger.info(f"Before dropna: shape={df.shape}")
+        nan_counts = df.isna().sum()
+        self.logger.info("NaN counts per column:\n" + "\n".join([f"  {col}: {count}" for col, count in nan_counts[nan_counts > 0].items()]))
+
         # Delete NaN rows
         df.dropna(inplace=True)
+
+        self.logger.info(f"After dropna: shape={df.shape}")
+        if df.empty:
+            self.logger.warning("DataFrame is empty after dropna!")
 
         return df
 
@@ -74,6 +88,9 @@ class BTCPredictor:
         volumes = df['volume_usd'].values if 'volume_usd' in df.columns else None
         min_required = self.n_lags + 1
 
+        #DEBUGG
+        self.logger.info(f"Input prices shape: {len(prices)}, NaN count: {np.isnan(prices).sum()}")
+
         if len(prices) < min_required:
             raise ValueError(f"Not enough data: need at least {min_required} prices, got {len(prices)}")
 
@@ -83,7 +100,10 @@ class BTCPredictor:
 
         feature_df = self._create_features(prices,volumes)
         if len(feature_df) == 0:
-           raise ValueError(f"Feature creation failed: need at least {min_required} prices, got {len(prices)}")
+            self.logger.error(f"Feature creation failed. Input prices length: {len(prices)}")
+            self.logger.error(f"First 10 prices: {prices[:10]}")
+            self.logger.error(f"NaN count in prices: {np.isnan(prices).sum()}")
+            raise ValueError(f"Feature creation failed: need at least {min_required} prices, got {len(prices)}")
 
         self.feature_names = [col for col in feature_df.columns if col != 'price']
         X = feature_df.drop('price', axis=1).values
