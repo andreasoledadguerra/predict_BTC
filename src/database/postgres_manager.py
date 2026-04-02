@@ -56,7 +56,7 @@ class DatabaseManager:
             ON CONFLICT (date) DO UPDATE SET 
                 price_usd = EXCLUDED.price_usd, 
                 volume_usd = EXCLUDED.volume_usd;
-            """.format(table_name)
+            """
 
             # Execute the block insertion
             with self.engine.begin() as conn:
