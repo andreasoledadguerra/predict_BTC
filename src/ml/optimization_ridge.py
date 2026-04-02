@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import Ridge
 from src.ml.btc_predictor import     BTCPredictor
 
-def optimize_ridge_alpha(X, Y, alphas=None, n_splits=3,scoring='r2', n_lags=7,windows=None):
+def optimize_ridge_alpha(X, y, alphas=None, n_splits=3,scoring='r2', n_lags=7,windows=None):
     if alphas is None:
         alphas = [0.1, 1, 10, 50, 100, 200]
     if windows is None:
