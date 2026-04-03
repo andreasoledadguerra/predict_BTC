@@ -408,7 +408,7 @@ class BTCPlotter:
             if optimize_alpha:
                 temp_predictor = BTCPredictor(n_lags=self.n_lags, windows=self.windows)
                 X_all, y_all, _ = temp_predictor.prepare_training_data(df_train)
-                best_alpha, best_score = optimize_ridge_alpha(X_all, y_all)
+                best_alpha, best_score, _ = optimize_ridge_alpha(X_all, y_all)
 
                 logger.info(f"Optimization complete: best alpha = {best_alpha} (CV R² = {best_score:.4f})")
                 alpha = best_alpha
