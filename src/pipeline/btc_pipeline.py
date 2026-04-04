@@ -1,6 +1,7 @@
 
 import pandas as pd
 import logging
+from typing import List,Dict
 from sklearn.linear_model import Ridge
 from src.api.coingecko_client import CoinGeckoClient
 from src.database.postgres_manager import DatabaseManager
@@ -40,32 +41,48 @@ class BTCDataPipeline:
     
     def predict_training_data(
         self, 
-        df, 
-        n_days_future,
-        alpha=1.0
-    ):
+        df: pd.DataFrame, 
+        n_days_future:int,
+        n_lags: int = 3,
+        windows:List[int] = None,
+        target_type: str = 'return',
+        alpha: float = 1.0
+    ) -> Dict:
+        
         """Train Linear and Ridge models, and generate predictions"""
         # ---- PREPARE DATA (for both models) ----
 
-        temp_predictor = BTCPredictor()
+        windows = windows or [3,5]
+
+        temp_predictor = BTCPredictor(
+            n_lags=n_lags,
+            windows=windows,
+            target_type=target_type
+        )
         X, y, last_prices = temp_predictor.prepare_training_data(df)
 
         #context window
-        extended_prices = df['price_usd'].values[-20:]
+        min_history = n_lags + max(windows)
+        extended_prices = df['price_usd'].values[-min_history:].copy()
         
         # ---- MODELO 1: LINEAR REGRESSION ----
-        linear_predictor = BTCPredictor()
-
-        
-        linear_predictor.feature_names = temp_predictor.feature_names
-        linear_predictions = linear_predictor.predict_future(n_days_future, last_prices=extended_prices, )
+        linear_predictor = BTCPredictor(
+            n_lags=n_lags,
+            windows=windows,
+            target_type=target_type
+        )
+        linear_predictor.train(X, y)
+        linear_predictions = linear_predictor.predict_future(n_days_future, last_prices=extended_prices)
         X_scaled =linear_predictor.scaler.transform(X)
         linear_r2 = linear_predictor.model.score(X_scaled, y)
         
         # ---- MODELO 2: RIDGE REGRESSION ----
-        ridge_predictor = BTCPredictor(model=Ridge(alpha=alpha))
-
-        ridge_predictor.feature_names = temp_predictor.feature_names
+        ridge_predictor = BTCPredictor(
+            model=Ridge(alpha=alpha),
+            n_lags=n_lags,
+            windows=windows,
+            target_type=target_type
+            )
         ridge_predictor.train(X, y)
         ridge_predictions = ridge_predictor.predict_future(n_days_future,last_prices=extended_prices)
         X_scaled =ridge_predictor.scaler.transform(X)
