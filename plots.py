@@ -45,7 +45,7 @@ class BTCPlotter:
         self.df = df
         self.output_dir = output_dir 
         self.n_lags = n_lags
-        self.windows = windows or [7, 14]
+        self.windows = windows or [3,5]
         self.last_linear = None
         self.last_ridge = None
         self.btc_predictor = BTCPredictor
@@ -386,8 +386,8 @@ class BTCPlotter:
             df_train: pd.DataFrame,
             df_val: Optional[pd.DataFrame] = None, 
             n_days_future: int = 3,
-            alpha: float = 1.0,
-            optimize_alpha: bool = True
+            alpha: float = 10.0,
+            optimize_alpha= False
         ) -> str:
             """
             Generate plot for Ridge Regression model.
