@@ -36,79 +36,24 @@ class BTCPredictor:
         return df
 
 
-    def prepare_training_data(self, df: pd.DataFrame, n_horizon: int = 7) -> tuple:
+    def prepare_training_data(self, df: pd.DataFrame) -> tuple:
         prices = df['price_usd'].values
-        volumes = df['volume_usd'].values if 'volume_usd' in df.columns else None
-        if volumes is not None:
-            volumes =pd.to_numeric(volumes, errors='coerce')
-            self.logger.info(f"Volumes - NaN count: {np.isnan(volumes).sum()}, sample: {volumes[:5]}")
-
-        #DEBUGG
-        self.logger.info(f"Input prices shape: {len(prices)}, NaN count: {np.isnan(prices).sum()}")
-
-        min_required = self.n_lags + 1
-        if len(prices) < min_required:
-            raise ValueError(f"Not enough data: need at least {min_required} prices, got {len(prices)}")
+        if len(prices) < self.n_lags + 2:
+            raise ValueError(f"Need at least {self.n_lags+2} prices, got {len(prices)}")
 
         # Create  features
-        feature_df = self._create_features(prices,volumes)
-
-        if self.target_type == 'price':
-            y = feature_df['price'].values
-            exclude = ['price']
-        elif self.target_type == 'return':
-            if 'return' not in feature_df.columns:
-                            raise ValueError("_create_features must generate 'return' column for target_type='return'")
-            y = feature_df['return'].values
-            exclude = ['price', 'return']
-        elif self.target_type == 'diff':
-        # Diferencia simple a 1 día (price_t - price_{t-1})
-            if 'diff' not in feature_df.columns:
-                feature_df['diff'] = feature_df['price'].diff()
-            y = feature_df['diff'].values
-            exclude = ['price', 'diff']
-        else:
-            raise ValueError(f"Unknown target_type: {self.target_type}")
-       
-        # Las features son todas las columnas excepto las excluidas
-        self.feature_names = [col for col in feature_df.columns if col not in exclude]
+        feature_df = self._create_features(prices)
+        # Target: 'return'
+        y = feature_df['return'].values
+        # Features: all the column except 'price' and 'return'
+        self.feature_names = [col for col in feature_df.columns if col not in ['price', 'return']]
         X = feature_df[self.feature_names].values
-
-           # Verificar que X e y tengan la misma longitud
-        if len(X) != len(y):
-            raise ValueError(f"Length mismatch: X={len(X)}, y={len(y)}")
-
-
+        # Save the last n_lags for prediction
         self.last_prices = prices[-self.n_lags:].copy()
         self.logger.info(f"Prepared {len(X)} samples with {X.shape[1]} features")
         return X, y, self.last_prices
 
-        #if len(feature_df) == 0:
-        #    self.logger.error(f"Feature creation failed. Input prices length: {len(prices)}")
-        #    self.logger.error(f"First 10 prices: {prices[:10]}")
-        #    self.logger.error(f"NaN count in prices: {np.isnan(prices).sum()}")
-        #    raise ValueError(f"Feature creation failed: need at least {min_required} prices, got {len(prices)}")
-#
-        #self.feature_names = [col for col in feature_df.columns if col != 'price']
-        ##X = feature_df.drop('price', axis=1).values
-        ##y = feature_df['price'].values
-#
-        #if self.target_type == 'return':
-        #    # Calcular retorno logarítmico
-        #    feature_df['target'] = np.log(feature_df['price'] / feature_df['price'].shift(1))
-        #    # Eliminar la primera fila (que tiene NaN por el shift)
-        #    feature_df.dropna(subset=['target'], inplace=True)
-        #    y = feature_df['target'].values
-        #    # Las features se quedan igual (rezagos del precio, medias móviles, etc.)
-        #    X = feature_df.drop(['price', 'target'], axis=1).values
-        #else:
-        #    y = feature_df['price'].values
-        #    X = feature_df.drop('price', axis=1).values
-       #
-        #self.logger.info(f"Prepared {len(X)} samples with {X.shape[1]} features")
-        #return X, y, last_prices
-#
-#
+
     def train(self, X, y):
 
         if not self.is_trained:
