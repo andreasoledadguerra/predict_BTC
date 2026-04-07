@@ -13,8 +13,7 @@ class BTCPredictor:
     - Rolling means and standard deviations
     """
 
-    def __init__(self, model: Optional[Union[LinearRegression, Ridge]] = None,
-                 n_lags: int = 3, windows: List[int] = None, target_type='return'):
+    def __init__(self, model=None,n_lags: int = 3, windows: List[int] = None, target_type='return'):
         self.model = model or LinearRegression()
         self.n_lags = n_lags
         self.windows = []
@@ -27,47 +26,12 @@ class BTCPredictor:
 
     def _create_features(self, prices: np.ndarray, volumes: np.ndarray = None) -> pd.DataFrame:
         df = pd.DataFrame({'price': prices})        
-        if volumes is not None and len(volumes) == len(prices) and not np.all(np.isnan(volumes)):
-            df['volume'] = pd.to_numeric(volumes, errors='coerce')
-
-        # Logaritmic returns
+        # Logaritmic return
         df['return'] = np.log(df['price'] / df['price'].shift(1))
-
         # Return's lags
         for lag in range(1, self.n_lags + 1):
             df[f'return_lag_{lag}'] = df['return'].shift(lag)
-
-        # Rolling stats on returns
-        for w in self.windows:
-            df[f'return_rolling_mean_{w}'] = df['return'].shift(1).rolling(w).mean()
-            df[f'return_rolling_std_{w}'] =  df['return'].shift(1).rolling(w).std()
-
-            
-        
-        # Returns
-        #returns = df['price'].pct_change()
-        #df['return_1d'] = returns
-        #df['return_7d'] = returns.rolling(7).sum()
-        ##df['momentum'] = df['price'] / df['price'].shift(7) - 1
-#
-        ###Volatility
-        #df['volatility_7d'] = returns.rolling(7).std()
-#
-        ## RSI (14 days)
-        #delta = df['price'].diff()
-        #gain = delta.clip(lower=0).rolling(14).mean()
-        #loss = (-delta.clip(upper=0)).rolling(14).mean()
-        #rs = gain / loss
-        #df['rsi'] = 100 - (100 / (1 + rs))
-        ## MACD (12,26,9)
-        #ema12 = df['price'].ewm(span=12, adjust=False).mean()
-        #ema26 = df['price'].ewm(span=26, adjust=False).mean()
-        #df['macd'] = ema12 - ema26
-        #df['macd_signal'] = df['macd'].ewm(span=9, adjust=False).mean()
-        #df['macd_hist'] = df['macd'] - df['macd_signal']
-
-        self.logger.info(f"NaN count por columna antes de dropna:\n{df.isna().sum()}")
-
+        # Delete rows with NaN (first n_lags+1 rows)
         df.dropna(inplace=True)
         return df
 
