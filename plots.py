@@ -46,6 +46,7 @@ class BTCPlotter:
         self.output_dir = output_dir 
         self.n_lags = n_lags
         self.windows = windows or [3,5]
+        self.target_type = self.target_type
         self.last_linear = None
         self.last_ridge = None
         self.btc_predictor = BTCPredictor
@@ -70,6 +71,29 @@ class BTCPlotter:
     # PRIVATE HELPER METHODS 
     # ============================================================
 
+
+    def _walk_forward_validate(self, predictor, df_val_aligned, df_train, n_days):
+        """Evalúa el modelo deslizando la ventana sobre todo el período de validación."""
+        all_preds = []
+        all_actuals = []
+
+        df_full = pd.concat([df_train, df_val_aligned]).sort_values('date').reset_index(drop=True)
+        val_start_idx = len(df_train)
+
+        for i in range(len(df_val_aligned) - n_days + 1):
+            context_end_idx = val_start_idx + i
+            context_prices = df_full['price_usd'].iloc[:context_end_idx].values
+            history_size = min(200, len(context_prices))
+            context_window = context_prices[-history_size:]
+
+            preds = predictor.predict_future(n_days, last_prices=context_window)
+            actual = df_full['price_usd'].iloc[context_end_idx:context_end_idx + n_days].values
+
+            if len(actual) == n_days:
+                all_preds.extend(preds)
+                all_actuals.extend(actual)
+
+        return np.array(all_actuals), np.array(all_preds)
  
     def _train_and_predict(
         self, 
@@ -82,92 +106,122 @@ class BTCPlotter:
 
         # Select and configure model
         if model_type == 'linear':
-            predictor = BTCPredictor()
+            predictor = BTCPredictor(
+                n_lags=self.n_lags,
+                windows=[],
+                target_type='return'
+            )
             model_name = "Linear Regression"
         elif model_type == 'ridge':
-            alpha = model_kwargs.get('alpha', 1.0)
-            predictor = BTCPredictor(model=Ridge(alpha=alpha))
+            alpha = model_kwargs.get('alpha', 10.0)
+            predictor = BTCPredictor(
+                model=Ridge(alpha=alpha),
+                n_lags=self.n_lags,
+                windows=[],
+                target_type='return'              
+            )
             model_name = f"Ridge Regression (α={alpha})"
         else:
             raise ValueError(f"Unknown model type: {model_type}")
 
-
-        # TRAINING DATA
-        #df = df.sort_values('date').reset_index(drop=True)
-        #df_train = df.iloc[:-n_days_future].copy() #train data - last n_days_future
-        #df_val = df.iloc[-n_days_future:].copy() # ground truth - last n_days_future
-
         df = df.sort_values('date').reset_index(drop=True)
-
-        if df_val is not None:
-            # Usar el DataFrame externo como validación
-            df_train = df.copy()
-            # Asegurar que df_val también esté ordenado
-            df_val = df_val.sort_values('date').reset_index(drop=True)
-            # Tomar solo los primeros n_days_future días de df_val para comparar con las predicciones
-            df_val_ground = df_val.iloc[:n_days_future].copy()
-        else:
-            # División interna: los últimos n_days_future días son validación
-            df_train = df.iloc[:-n_days_future].copy()
-            df_val_ground = df.iloc[-n_days_future:].copy()
-
+        df_train = df.copy()
         X, y, _ = predictor.prepare_training_data(df_train)
 
-        # Extended history for the first prediction (needed for rolling windows)
-        history_size =min(200, len(df_train))
-        extended_history = df_train['price_usd'].values[-history_size:].copy()
-
-        ##
-        #extended_prices = df['price_usd'].values[-20]
-
-        # Train
+        # Train model
         predictor.train(X, y)
+
 
         # Model trainig predictions (for plotting the fit)
         X_scaled = predictor.scaler.transform(X)
         y_pred_train = predictor.model.predict(X_scaled)
+
 
         # Metrics in train
         r2_train = predictor.model.score(X_scaled, y)
         mae_train = np.mean(np.abs(y - y_pred_train))
         rmse_train = np.sqrt(np.mean((y - y_pred_train) ** 2))
 
-        # Predictions about the validation period (future)
-        predictions_val = predictor.predict_future(n_days_future, last_prices=extended_history)
 
-        # Metrics about validation ----------------------------------
-        y_val = df_val_ground['price_usd'].values[:len(predictions_val)]
-        mae_val = np.mean(np.abs(y_val - predictions_val))
-        rmse_val = np.sqrt(np.mean((y_val - predictions_val) ** 2))
-        ss_res = np.sum((y_val - predictions_val) ** 2)
-        ss_tot = np.sum((y_val - np.mean(y_val)) ** 2)
-        r2_val = 1 - (ss_res / ss_tot) if ss_tot != 0 else np.nan
-        # ------------------------------------------------------------
+        if df_val is not None:
+            df_val = df_val.sort_values('date').reset_index(drop=True)
 
+            # Usar el DataFrame externo como validación
+            context_df = pd.concat([df_train, df_val]).sort_values('date').reset_index(drop=True)
+            # Walk-forward validation
+            y_val, preds_val = self._walk_forward_validate(predictor, df_val, df_train, n_days_future)
 
-        # Generate future dates for the plot
+            if len(y_val) > 0:
+            
+                mae_val = np.mean(np.abs(y_val - preds_val))
+                rmse_val = np.sqrt(np.mean((y_val - preds_val) ** 2))
+                ss_res = np.sum((y_val - preds_val) ** 2)
+                ss_tot = np.sum((y_val - np.mean(y_val)) ** 2)
+                r2_val = 1 - (ss_res / ss_tot) if ss_tot != 0 else np.nan
+
+                # Direccional accuracy (solo si tenemos al menos 2 puntos para comparar)
+                if len(y_val) >= 2:
+                    actual_up = y_val[1:] > y_val[:-1]
+                    pred_up = preds_val[1:] > preds_val[:-1]
+                    directional_accuracy = np.mean(actual_up == pred_up)
+                    logger.info(f"Directional accuracy: {directional_accuracy:.2%}")
+
+            else:
+                # Fallback: predecir solo los primeros n_days_future días después del train
+                extended_history = df_train['price_usd'].values[-max(self.n_lags+1, 50):].copy()
+                preds_val = predictor.predict_future(n_days_future, last_prices=extended_history)
+                y_val = df_val['price_usd'].iloc[:n_days_future].values
+                mae_val = np.mean(np.abs(y_val - preds_val))
+                rmse_val = np.sqrt(np.mean((y_val - preds_val) ** 2))
+                ss_res = np.sum((y_val - preds_val) ** 2)
+                ss_tot = np.sum((y_val - np.mean(y_val)) ** 2)
+                r2_val = 1 - (ss_res / ss_tot) if ss_tot != 0 else np.nan
+                # Direccional accuracy (con al menos 2 puntos)
+                if len(y_val) >= 2:
+                    actual_up = y_val[1:] > y_val[:-1]
+                    pred_up = preds_val[1:] > preds_val[:-1]
+                    directional_accuracy = np.mean(actual_up == pred_up)
+                    logger.info(f"Directional accuracy (fallback): {directional_accuracy:.2%}")
+        else:  
+            # No external validation set → use the last n_days_future days from the df itself
+            history_size= min(200, len(df_train)) # ?
+            extended_history = df_train['price_usd'].values[-history_size:].copy() # ?
+            preds_val = predictor.predict_future(n_days_future, last_prices=extended_history)
+            y_val = df_train['price_usd'].iloc[-n_days_future:].values if len(df_train) >= n_days_future else np.array([])
+            if len(y_val) == n_days_future:
+                mae_val = np.mean(np.abs(y_val - preds_val))
+                rmse_val = np.sqrt(np.mean((y_val - preds_val) ** 2))
+                ss_res = np.sum((y_val - preds_val) ** 2)
+                ss_tot = np.sum((y_val - np.mean(y_val)) ** 2)
+                r2_val = 1 - (ss_res / ss_tot) if ss_tot != 0 else np.nan
+                # Direccional accuracy
+                if len(y_val) >= 2:
+                    actual_up = y_val[1:] > y_val[:-1]
+                    pred_up = preds_val[1:] > preds_val[:-1]
+                    directional_accuracy = np.mean(actual_up == pred_up)
+                    logger.info(f"Directional accuracy (self-valid): {directional_accuracy:.2%}")
+            else:
+                # There is not enough data to validate
+                y_val = np.array([])
+                mae_val = rmse_val = r2_val = np.nan
+
+        # Future dates for the plot
         last_date = df_train['date'].iloc[-1]
-        future_dates = pd.date_range(
-            start=last_date + timedelta(days=1),
-            periods=n_days_future,
-            freq='D'
-        )
+        future_dates = pd.date_range(start=last_date + timedelta(days=1), periods=n_days_future, freq='D')      
 
-
-        # LOGS para comparar coeficientes (solo si el modelo tiene coef_)
+        # coefficients'logs
         if hasattr(predictor.model, 'coef_'):
             logger.info(f"📊 {model_name} - Coeficientes (primeros 5): {predictor.model.coef_[:5]}")
             if len(predictor.model.coef_) > 5:
                 logger.info("   ... (más coeficientes)")
 
-
+        # Output
         return {
             'X': X,
             'y': y,
             'y_pred_train': y_pred_train,
-            'predictions_val': predictions_val,
+            'predictions_val': preds_val,
             'y_val': y_val,
-            'df_val_ground': df_val_ground,
             'r2_train': r2_train,
             'mae_train': mae_train ,
             'rmse_train': rmse_train,
@@ -179,8 +233,6 @@ class BTCPlotter:
             'last_date': last_date,
             'last_price': df_train['price_usd'].iloc[-1],
             'predictor': predictor,
-            'coef': predictor.model.coef_ if hasattr(predictor.model, 'coef_') else None,
-            'intercept': predictor.model.intercept_ if hasattr(predictor.model, 'intercept_') else None,
         }
 
 
@@ -261,8 +313,15 @@ class BTCPlotter:
         # Adjust training model
         start_idx = len(df) - len(model_data['y_pred_train'])
         dates_train = df['date'].iloc[start_idx:].values
+
+        #start_price = df['price_usd'].iloc[start_idx - 1]
+        #predicted_prices = start_price + np.cumsum(model_data['y_pred_train'])
+
+        real_prices_base = df['price_usd'].iloc[start_idx:].values
+        predicted_prices = real_prices_base + model_data['y_pred_train']
+
         ax_main.plot(
-            dates_train, model_data['y_pred_train'],
+            dates_train, predicted_prices,
             color=color, linewidth=2.0, linestyle='-', alpha=0.6,
             label=f'{model_name} Training Fit (R²={r2_train:.3f})', zorder=4
     )
@@ -459,6 +518,7 @@ class BTCPlotter:
         logger.info("🚀 GENERATING ALL BTC PREDICTION PLOTS")
         logger.info("="*60)
         
+
         # Sort and divide chronologically
         df_real = df_real.sort_values('date').reset_index(drop=True)
         #n = len(df_real)
@@ -505,6 +565,15 @@ class BTCPlotter:
             import traceback
             traceback.print_exc()
         
+        # DEBUGG
+        if result.get('linear_model'):
+            lm = result['linear_model']
+            logger.info(f"Train: {df_train['date'].iloc[0].date()} → {df_train['date'].iloc[-1].date()}")
+            logger.info(f"Val:   {df_val['date'].iloc[0].date()} → {df_val['date'].iloc[-1].date()}")
+            logger.info(f"Prediction start: {lm['last_date']}")
+            logger.info(f"Train samples: {len(lm['y'])} | Val samples: {len(lm['y_val'])}")
+            logger.info(f"Linear R²_train: {lm['r2_train']:.4f} | R²_val: {lm['r2_val']:.4f}")
+
         logger.info("\n" + "="*60)
         logger.info(f"✅ COMPLETED: {len(result['paths'])}/2 plots generated successfully")
         logger.info("="*60)
