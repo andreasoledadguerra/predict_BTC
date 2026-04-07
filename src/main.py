@@ -53,13 +53,19 @@ def initialize_components():
     db_manager = DatabaseManager(settings=pg_settings)
 
     # Initialize ML predictor
-    predictor = BTCPredictor()
+    predictor = BTCPredictor(
+        model=any,
+        output_dir="plots",
+        n_lags=3,
+        windows=[],
+        target_type='return'
+    )
 
     # Initialize data pipeline
     pipeline = BTCDataPipeline(api_client, db_manager, predictor)
 
     # Initialize plotter (always available)
-    plotter = BTCPlotter(df=None, output_dir="plots", n_lags=7, windows=[7,14])  # df will be set later
+    plotter = BTCPlotter(df=None, output_dir="plots", n_lags=3, windows=[])  # df will be set later
 
     logger.info("✅ All components initialized successfully")
     
