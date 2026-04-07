@@ -79,66 +79,33 @@ class BTCPredictor:
 
     def predict_future(self, n_days: int, last_prices=None) -> np.ndarray:
         prices_to_use = last_prices if last_prices is not None else self.last_prices
+        if prices_to_use is None:
+            raise ValueError("No last_prices available")
+        if len(prices_to_use) < self.n_lags + 1:
+            raise ValueError(f"Need at least {self.n_lags+1} prices, got {len(prices_to_use)}")
+        predictions = []
+        current_prices = list(prices_to_use)
 
-        feature_df = self._create_features(np.array(prices_to_use))
+        for step in range(n_days):
 
-        if len(feature_df) == 0:
-            raise ValueError("Cannot create features")
+            returns_series = np.log(np.array(current_prices[1:])) / np.array(current_prices[:-1])
+
+            if len(returns_series) < self.n_lags:
+                # si no hay suficientes retornos, rellenar con ceros (sólo ocurre al inicio)
+                features = np.zeros(self.n_lags)
+                features[-len(returns_series):] = returns_series
+            else:
+                features = returns_series[-self.n_lags:]
+            features = features.reshape(1, -1)
+
+            features_scaled = self.scaler.transform(features)
+            pred_return = self.model.predict(features_scaled[0])
+
+            next_price = current_prices[-1] * np.exp(pred_return)
+            predictions.append(next_price)
+            current_prices.append(next_price)
+
         
-        feature_row = feature_df[self.feature_names].iloc[-1].values.reshape(1, -1)
-        feature_scaled = self.scaler.transform(feature_row)
+        return np.array(predictions)
 
-        if self.target_type == 'diff':
-            pred_diff = self.model.predict(feature_scaled)[0]
-            final_price = prices_to_use[-1] + pred_diff
-
-            # Interpolate linearly to obtain n_days points for the plot
-            predictions = np.linspace(prices_to_use[-1], final_price, n_days + 1)[1:]
-
-        
-        return predictions
-
-
-
-        #if last_prices is not None:
-        #    prices_to_use = last_prices
-        #else:
-        #    if self.last_prices is None:
-        #        raise ValueError("No last_prices available")
-        #    prices_to_use = self.last_prices
-#
-        ## We need at least n_lags + max(windows) + 1 to have an initial difference
-        #min_required = self.n_lags + max(self.windows) + 1
-        #if len(prices_to_use) < min_required:
-        #    raise ValueError(f"Need at least {min_required} prices, got {len(prices_to_use)}")
-        #
-        #predictions = []
-        #current_prices = list(prices_to_use)
-#
-        #for step in range(n_days):
-        #    # Crear Series de precios para usar _create_features        
-        #    feature_df = self._create_features(np.array(current_prices))
-#
-        #    # Take the last row (that correspond to the last price)
-        #    if len(feature_df) == 0:
-        #        raise ValueError(f"Cannot create features at step {step}")
-#
-        #    #Retrieve features from the last row (without the column 'price')
-        #    feature_row = feature_df[self.feature_names].iloc[-1:].values
-        #    feature_scaled = self.scaler.transform(feature_row)
-#
-        #    if self.target_type == 'diff':
-        #        pred_diff = self.model.predict(feature_scaled)[0]
-        #        next_price = current_prices[-1] + pred_diff
-        #    elif self.target_type == 'return':
-        #        pred_return = self.model.predict(feature_scaled)[0]
-        #        next_price = current_prices[-1] * np.exp(pred_return)
-        #    else:  # price
-        #        next_price = self.model.predict(feature_scaled)[0]
-        #
-        #    predictions.append(next_price)
-        #    current_prices.append(next_price)
-#
-#
-        #return np.array(predictions)
 
