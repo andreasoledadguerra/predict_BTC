@@ -96,10 +96,11 @@ class BTCPredictor:
                 features[-len(returns_series):] = returns_series
             else:
                 features = returns_series[-self.n_lags:]
+                
             features = features.reshape(1, -1)
 
             features_scaled = self.scaler.transform(features)
-            pred_return = self.model.predict(features_scaled[0])
+            pred_return = self.model.predict(features_scaled)
 
             next_price = current_prices[-1] * np.exp(pred_return)
             predictions.append(next_price)
