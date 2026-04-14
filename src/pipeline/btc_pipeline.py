@@ -56,10 +56,9 @@ class BTCDataPipeline:
 
         temp_predictor = BTCPredictor(
             n_lags=n_lags,
-            windows=windows,
-            target_type=target_type
+            windows=windows
         )
-        X, y, last_prices = temp_predictor.prepare_training_data(df)
+        X, y, last_prices = temp_predictor.prepare_training_data(df, n_horizon=n_days_future)
 
         #context window
         min_history = n_lags + max(windows)
