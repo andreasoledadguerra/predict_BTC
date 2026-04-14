@@ -65,8 +65,11 @@ class CoinGeckoClient:
         request_config = self.build_request_config(start_ts, end_ts)
         time.sleep(1)
 
+        headers = {"x-cg-pro-api-key": self.api_key}
+
         response = self.session.get(
             request_config["url"],
+            headers=headers,
             params=request_config["params"],
             timeout=self.timeout
             
