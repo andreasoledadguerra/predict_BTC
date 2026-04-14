@@ -34,7 +34,7 @@ class BTCPlotter:
     plus a comparison plot showing both models together.
     """
 
-    def __init__(self, df: pd.DataFrame, output_dir: str = "plots", n_lags: int =7, windows: List[int] = None):
+    def __init__(self, df: pd.DataFrame, output_dir: str = "plots", n_lags: int =7, windows: List[int] = None, target_type='return'):
         """
         Initialize the plotter.
         
@@ -46,7 +46,7 @@ class BTCPlotter:
         self.output_dir = output_dir 
         self.n_lags = n_lags
         self.windows = windows or [3,5]
-        self.target_type = self.target_type
+        self.target_type = target_type
         self.last_linear = None
         self.last_ridge = None
         self.btc_predictor = BTCPredictor
@@ -80,11 +80,17 @@ class BTCPlotter:
         df_full = pd.concat([df_train, df_val_aligned]).sort_values('date').reset_index(drop=True)
         val_start_idx = len(df_train)
 
-        for i in range(len(df_val_aligned) - n_days + 1):
+        for i in range(0, len(df_val_aligned) - n_days + 1, n_days):
             context_end_idx = val_start_idx + i
             context_prices = df_full['price_usd'].iloc[:context_end_idx].values
-            history_size = min(200, len(context_prices))
-            context_window = context_prices[-history_size:]
+            min_context = 60
+            if len(context_prices) < min_context:
+                logger.warning(f" Contexto insuficiente: {len(context_prices)} días (mínimo{min_context})")
+                continue
+            context_window = context_prices[-min_context:]
+          
+            # Convert to float and flat the dimension
+            context_window = np.asarray(context_window, dtype=float).ravel()
 
             preds = predictor.predict_future(n_days, last_prices=context_window)
             actual = df_full['price_usd'].iloc[context_end_idx:context_end_idx + n_days].values
@@ -108,7 +114,7 @@ class BTCPlotter:
         if model_type == 'linear':
             predictor = BTCPredictor(
                 n_lags=self.n_lags,
-                windows=[],
+                windows=self.windows,
                 target_type='return'
             )
             model_name = "Linear Regression"
@@ -117,7 +123,7 @@ class BTCPlotter:
             predictor = BTCPredictor(
                 model=Ridge(alpha=alpha),
                 n_lags=self.n_lags,
-                windows=[],
+                windows=self.windows,
                 target_type='return'              
             )
             model_name = f"Ridge Regression (α={alpha})"
@@ -131,44 +137,51 @@ class BTCPlotter:
         # Train model
         predictor.train(X, y)
 
+        # ---- Fechas alineadas con las muestras de entrenamiento (después de dropna) ----
+        n_dropped = len(df_train) - len(y)   # filas eliminadas por dropna en prepare_training_data
+        dates_train = df_train['date'].iloc[n_dropped:].reset_index(drop=True)
 
         # Model trainig predictions (for plotting the fit)
-        X_scaled = predictor.scaler.transform(X)
+        X_scaled = predictor.scaler.transform(X)        
         y_pred_train = predictor.model.predict(X_scaled)
+                                                
+        real_prices_base = df_train['price_usd'].values[-len(y_pred_train):]
+        y_pred_prices_train = real_prices_base * np.exp(y_pred_train)
+        y_true_prices_train = real_prices_base * np.exp(y)
 
-
-        # Metrics in train
+        # Train's metrics
         r2_train = predictor.model.score(X_scaled, y)
-        mae_train = np.mean(np.abs(y - y_pred_train))
-        rmse_train = np.sqrt(np.mean((y - y_pred_train) ** 2))
+        mae_train = np.mean(np.abs(y_true_prices_train - y_pred_prices_train))
+        rmse_train = np.sqrt(np.mean((y_true_prices_train - y_pred_prices_train) ** 2))
+        
+        # ---- Predicción futura (para el gráfico) ----
+        # Usar los últimos precios del conjunto de entrenamiento como contexto
+        min_context = 60
+        extended_history = df_train['price_usd'].values[-min_context:].copy()
+        predictions_future = predictor.predict_future(n_days_future, last_prices=extended_history)
 
-
+        # ---- Walk-forward validation (para métricas realistas) ----
         if df_val is not None:
-            df_val = df_val.sort_values('date').reset_index(drop=True)
-
-            # Usar el DataFrame externo como validación
-            context_df = pd.concat([df_train, df_val]).sort_values('date').reset_index(drop=True)
             # Walk-forward validation
-            y_val, preds_val = self._walk_forward_validate(predictor, df_val, df_train, n_days_future)
+            y_val_wf, preds_val_wf = self._walk_forward_validate(predictor, df_val, df_train, n_days_future)
 
-            if len(y_val) > 0:
-            
-                mae_val = np.mean(np.abs(y_val - preds_val))
-                rmse_val = np.sqrt(np.mean((y_val - preds_val) ** 2))
-                ss_res = np.sum((y_val - preds_val) ** 2)
-                ss_tot = np.sum((y_val - np.mean(y_val)) ** 2)
+            if len(y_val_wf) > 0:      
+                mae_val = np.mean(np.abs(y_val_wf - preds_val_wf))
+                rmse_val = np.sqrt(np.mean((y_val_wf - preds_val_wf) ** 2))
+                ss_res = np.sum((y_val_wf - preds_val_wf) ** 2)
+                ss_tot = np.sum((y_val_wf - np.mean(y_val_wf)) ** 2)
                 r2_val = 1 - (ss_res / ss_tot) if ss_tot != 0 else np.nan
 
                 # Direccional accuracy (solo si tenemos al menos 2 puntos para comparar)
-                if len(y_val) >= 2:
-                    actual_up = y_val[1:] > y_val[:-1]
-                    pred_up = preds_val[1:] > preds_val[:-1]
+                if len(y_val_wf) >= 2:
+                    actual_up = y_val_wf[1:] > y_val_wf[:-1]
+                    pred_up = preds_val_wf[1:] > preds_val_wf[:-1]
                     directional_accuracy = np.mean(actual_up == pred_up)
                     logger.info(f"Directional accuracy: {directional_accuracy:.2%}")
 
             else:
                 # Fallback: predecir solo los primeros n_days_future días después del train
-                extended_history = df_train['price_usd'].values[-max(self.n_lags+1, 50):].copy()
+                y_val = df_val['price_usd'].iloc[:n_days_future].values
                 preds_val = predictor.predict_future(n_days_future, last_prices=extended_history)
                 y_val = df_val['price_usd'].iloc[:n_days_future].values
                 mae_val = np.mean(np.abs(y_val - preds_val))
@@ -182,28 +195,12 @@ class BTCPlotter:
                     pred_up = preds_val[1:] > preds_val[:-1]
                     directional_accuracy = np.mean(actual_up == pred_up)
                     logger.info(f"Directional accuracy (fallback): {directional_accuracy:.2%}")
-        else:  
-            # No external validation set → use the last n_days_future days from the df itself
-            history_size= min(200, len(df_train)) # ?
-            extended_history = df_train['price_usd'].values[-history_size:].copy() # ?
-            preds_val = predictor.predict_future(n_days_future, last_prices=extended_history)
-            y_val = df_train['price_usd'].iloc[-n_days_future:].values if len(df_train) >= n_days_future else np.array([])
-            if len(y_val) == n_days_future:
-                mae_val = np.mean(np.abs(y_val - preds_val))
-                rmse_val = np.sqrt(np.mean((y_val - preds_val) ** 2))
-                ss_res = np.sum((y_val - preds_val) ** 2)
-                ss_tot = np.sum((y_val - np.mean(y_val)) ** 2)
-                r2_val = 1 - (ss_res / ss_tot) if ss_tot != 0 else np.nan
-                # Direccional accuracy
-                if len(y_val) >= 2:
-                    actual_up = y_val[1:] > y_val[:-1]
-                    pred_up = preds_val[1:] > preds_val[:-1]
-                    directional_accuracy = np.mean(actual_up == pred_up)
-                    logger.info(f"Directional accuracy (self-valid): {directional_accuracy:.2%}")
-            else:
-                # There is not enough data to validate
-                y_val = np.array([])
-                mae_val = rmse_val = r2_val = np.nan
+                y_val_wf, preds_val_wf = y_val, preds_val
+        else:
+            # There is not enough data to validate
+            y_val_wf,preds_val_wf = np.array([]), np.array([])
+            mae_val = rmse_val = r2_val = np.nan
+
 
         # Future dates for the plot
         last_date = df_train['date'].iloc[-1]
@@ -215,20 +212,22 @@ class BTCPlotter:
             if len(predictor.model.coef_) > 5:
                 logger.info("   ... (más coeficientes)")
 
-        # Output
+        # Return dictionary
         return {
             'X': X,
             'y': y,
             'y_pred_train': y_pred_train,
-            'predictions_val': preds_val,
-            'y_val': y_val,
+            'dates_train': dates_train,                       
+            'predictions_future': predictions_future, 
+            'future_dates': future_dates,
+            'predictions_val_wf': preds_val_wf,
+            'y_val_wf': y_val_wf,
             'r2_train': r2_train,
             'mae_train': mae_train ,
             'rmse_train': rmse_train,
             'r2_val': r2_val,
             'mae_val': mae_val,
             'rmse_val': rmse_val,
-            'future_dates': future_dates,
             'model_name': model_name,
             'last_date': last_date,
             'last_price': df_train['price_usd'].iloc[-1],
@@ -247,20 +246,39 @@ class BTCPlotter:
     ) -> str:
    
         # Unpack model data
-        y = model_data['y']
         y_pred_train = model_data['y_pred_train']
-        predictions_val = model_data['predictions_val']
-        y_val = model_data.get('y_val')
-        r2_train = model_data['r2_train']
-        mae_train = model_data['mae_train']
-        rmse_train = model_data['rmse_train']
+        y = model_data['y']
+        dates_train = model_data['dates_train']
+        predictions_future = model_data['predictions_future']
         future_dates = model_data['future_dates']
         last_date = model_data['last_date']
         last_price = model_data['last_price']
         model_name = model_data['model_name']
+        r2_train = model_data['r2_train']
+        mae_train = model_data['mae_train']
+        rmse_train = model_data['rmse_train']
+        r2_val = model_data.get('r2_val', np.nan)
+        mae_val = model_data.get('mae_val', np.nan)
+        rmse_val = model_data.get('rmse_val', np.nan)
 
-        std_error = np.std(y - y_pred_train)
+        # Convertir retornosde entrenamiento a precios acumulados
+        # Precio base: primer precio real en el período de entrenamiento 
+        first_day_train = dates_train.iloc[0]
+        base_price = df[df['date'] == first_day_train]['price_usd'].values[0]
+
+        # Acumular retornos logarítmicos: precio = base_price * exp(sum(returns))
+        cum_returns = np.cumsum(y_pred_train)
+        prices_train_fit = base_price *  np.exp(cum_returns)
+
+        real_prices_base = df['price_usd'].values[-len(y_pred_train):]
+        y = model_data['y']
+        y_pred = model_data['y_pred_train']
+
+        errors_usd = (real_prices_base * np.exp(y)) - (real_prices_base * np.exp(y_pred_train))
+        std_error = np.std(errors_usd)
+        standardized_errors = errors_usd / std_error
         
+
         # Create figure with two subplots
         fig, (ax_main, ax_metrics) = plt.subplots(
             2, 1,
@@ -269,102 +287,55 @@ class BTCPlotter:
             gridspec_kw={'hspace': 0.3}
         )
 
-        if df_val_ground is not None and y_val is not None:
+         # ---- MAIN PLOT----
+        # 1. Precios reales de entrenamiento (todo el período)
+        ax_main.plot(df['date'], df['price_usd'],
+                color='#2E86AB', linewidth=2.5, 
+                label='Real BTC Price (Train)', zorder=5, alpha=0.8)
+
+
+        # 2. Ajuste del modelo sobre entrenamiento (usando fechas alineadas)
+        ax_main.plot(dates_train, prices_train_fit,
+                 color=color, linewidth=2.0, linestyle='-', alpha=0.6,
+                 label=f'{model_name} Training Fit (R²={r2_train:.3f})', zorder=4)
+
+        # 3. Si hay datos de validación externos, graficarlos
+        if df_val_ground is not None and not  df_val_ground.empty:
             ax_main.plot(df_val_ground['date'], df_val_ground['price_usd'],
                          color='black', marker='o', linestyle='none', markersize=4,
-                         label='Real BTC Price (Validation)')
-            ax_main.plot(df_val_ground['date'], predictions_val,
-                         color=color, linestyle='--', marker='s', markersize=4,
-                         label=f'{model_name} Validation Prediction')
+                         label='Real BTC Price (Validation)', zorder=6)
+            
+        # 4. Future predictions (in the prices already)
+        ax_main.plot(future_dates, predictions_future,
+                     color=color, linestyle='--', marker='s', markersize=4,
+                     label=f'{model_name} Future Prediction', zorder=6)
         
-        # ---- MAIN PLOT: Historical + Predictions ----
-        df_val = model_data.get('df_val')
 
-        # Historical data
-        ax_main.plot(
-            df['date'], df['price_usd'],
-            color='#2E86AB', linewidth=2.5, 
-            label='Real BTC Price', zorder=5, alpha=0.8
-)
-        # Validation
+        # 5. Intervalo de confianza (creciente con el horizonte)
+        if predictions_future is not None and len(predictions_future) > 0:
+            n_future = len(predictions_future)
+            time_factor = np.sqrt(np.arange(1, n_future + 1))  # factor de crecimiento
 
-        if df_val is not None and not df_val.empty:
-            # Get the last historical point
-            last_train_date = df.iloc[:-len(df_val)]['date'].iloc[-1]
-            last_train_price = df.iloc[:-len(df_val)]['price_usd'].iloc[-1]
+            scale_factor = np.exp(cum_returns[-1]) if len(cum_returns) > 0 else 1.0
+            ci_lower = predictions_future - 1.96 * std_error * time_factor * scale_factor 
+            ci_upper = predictions_future + 1.96 * std_error * time_factor * scale_factor 
+            ax_main.fill_between(future_dates, ci_lower, ci_upper,
+                         color=color, alpha=0.15,
+                         label='95% Confidence Interval (growing)', zorder=2)
 
-            # Concatenate last point with initial one of df_val
-            bridge_point = pd.DataFrame({
-                'date': [last_train_date],
-                'price_usd': [last_train_price]
-            })
-
-            df_val_connected = pd.concat([bridge_point, df_val]).reset_index(drop=True)
-            ax_main.plot(
-                df_val_connected['date'], df_val_connected['price_usd'],
-                color='#2E86AB',        
-                linewidth=2.5,
-                linestyle='-',
-                alpha=0.9,
-                label='Real BTC Price (Validation)',
-                zorder=7
-    )
-
-        # Adjust training model
-        start_idx = len(df) - len(model_data['y_pred_train'])
-        dates_train = df['date'].iloc[start_idx:].values
-
-        #start_price = df['price_usd'].iloc[start_idx - 1]
-        #predicted_prices = start_price + np.cumsum(model_data['y_pred_train'])
-
-        real_prices_base = df['price_usd'].iloc[start_idx:].values
-        predicted_prices = real_prices_base + model_data['y_pred_train']
-
-        ax_main.plot(
-            dates_train, predicted_prices,
-            color=color, linewidth=2.0, linestyle='-', alpha=0.6,
-            label=f'{model_name} Training Fit (R²={r2_train:.3f})', zorder=4
-    )
-        
-        # Future predictions
-        ax_main.plot(
-            future_dates, predictions_val,
-            color='red', linestyle='--', linewidth=2,
-                 label=f'{model_name} Future Prediction', zorder=6)
-        
-        n_future = len(predictions_val)
-        time_factor = np.sqrt(np.arange(1, n_future + 1))
-
-        ci_lower = predictions_val - 1.96 * std_error * time_factor
-        ci_upper = predictions_val + 1.96 * std_error * time_factor
-        
-        ax_main.fill_between(future_dates,
-                             ci_lower,
-                             ci_upper,
-                             color=color, alpha=0.15, label='95% Confidence Interval (growing)', zorder=2)    
-
-
-        # Transition point
-        ax_main.scatter(
-            [last_date], [last_price],
-            color='red', s=150, zorder=10,
-            edgecolor='white', linewidth=2,
-            label='Prediction Start', marker='*'
-        )
-
+        # 6. Punto de inicio de predicción y líneas auxiliares
+        ax_main.scatter([last_date], [last_price],
+                        color='red', s=150, zorder=10,
+                        edgecolor='white', linewidth=2,
+                        label='Prediction Start', marker='*')
         ax_main.axvline(x=last_date, color='gray', linestyle=':', linewidth=1.5, alpha=0.7, zorder=4)
+        ax_main.axvspan(last_date, future_dates[-1],
+                    alpha=0.08, color='yellow', zorder=1,
+                    label='Prediction Period')
 
-        
-        # Shaded prediction area
-        ax_main.axvspan(
-            last_date, future_dates[-1],
-            alpha=0.08, color='yellow', zorder=1,
-            label='Prediction Period'
-        )
-        
-        # Main plot configuration
-        ax_main.set_title(f'{model_name} vs Real BTC Price\n{len(predictions_val)}-Day Prediction{title_suffix}',
-                      fontsize=14, fontweight='bold')
+        # Configuración del gráfico principal
+        ax_main.set_title(f'{model_name} vs Real BTC Price\n{len(predictions_future)}-Day Prediction{title_suffix}',
+                          fontsize=14, fontweight='bold')
         ax_main.set_xlabel('Date')
         ax_main.set_ylabel('Price (USD)')
         ax_main.legend(loc='upper left', fontsize=9)
@@ -372,50 +343,53 @@ class BTCPlotter:
         ax_main.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y-%m-%d'))
         ax_main.tick_params(axis='x', rotation=90)
 
+        # ---- GRÁFICO DE RESIDUOS ESTANDARIZADOS ----
+        real_prices_base = df['price_usd'].values[-len(model_data['y_pred_train']):]
+        y      = model_data['y']
+        y_pred = model_data['y_pred_train']
         
-        # ---- METRICS PLOT: Error Distribution ----
-        # Calculate training errors
-        errors = y - y_pred_train
-        std_error = np.std(errors)
-        standardized_errors = errors / std_error #z-scores
-
-        ax_metrics.hist(standardized_errors, bins=30, alpha=0.7, color=color, edgecolor='black',density=True)
+        errors_usd = (real_prices_base * np.exp(y)) - (real_prices_base * np.exp(y_pred))
+        std_error  = np.std(errors_usd)
+        standardized_errors = errors_usd / std_error
+        ax_metrics.hist(standardized_errors, bins=30, alpha=0.7, color=color,
+                        edgecolor='black', density=True)
         ax_metrics.axvline(x=0, color='black', linestyle='--', linewidth=1.5)
-        ax_metrics.axvline(x=-1.96 , color='red' , linestyle=':', linewidth=1, alpha=0.7, label='±1.96σ')
-        ax_metrics.axvline(x= 1.96, color= 'red', linestyle=':', linewidth=1, alpha=0.7)
+        ax_metrics.axvline(x=-1.96, color='red', linestyle=':', linewidth=1, alpha=0.7)
+        ax_metrics.axvline(x=1.96, color='red', linestyle=':', linewidth=1, alpha=0.7)
         ax_metrics.set_title(f'Standardized Residuals - {model_name}')
         ax_metrics.set_xlabel('Standardized Error (z-score)')
         ax_metrics.set_ylabel('Density')
         ax_metrics.grid(True, alpha=0.3)
 
-        # Stats box
+            # ---- CAJA DE TEXTO CON MÉTRICAS ----
         stats_text = (f'TRAIN:\n'
-                      f'MAE: ${model_data["mae_train"]:,.2f}\n'
-                      f'RMSE: ${model_data["rmse_train"]:,.2f}\n'
-                      f'R²: {model_data["r2_train"]:.4f}\n'
-                      f'Std Error: ${std_error:,.2f}')
+                  f'MAE: ${mae_train:,.2f}\n'
+                  f'RMSE: ${rmse_train:,.2f}\n'
+                  f'R²: {r2_train:.4f}\n'
+                  f'Std Error: ${std_error:,.2f}')
 
-        if 'mae_val' in model_data and model_data['mae_val'] is not None:
+        if not np.isnan(r2_val):
             stats_text += (f'\n\nVALIDATION:\n'
-                           f'MAE: ${model_data["mae_val"]:,.2f}\n'
-                           f'RMSE: ${model_data["rmse_val"]:,.2f}\n'
-                           f'R²: {model_data["r2_val"]:.4f}')
+                            f'MAE: ${mae_val:,.2f}\n'
+                            f'RMSE: ${rmse_val:,.2f}\n'
+                            f'R²: {r2_val:.4f}')
 
         ax_metrics.text(0.95, 0.95, stats_text,
-                        transform=ax_metrics.transAxes,
-                        verticalalignment='top', horizontalalignment='right',
-                        bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8),
-                        fontsize=9)
+                    transform=ax_metrics.transAxes,
+                    verticalalignment='top', horizontalalignment='right',
+                    bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8),
+                    fontsize=9)
 
-        
-        # Save figure
-        #plt.tight_layout()
+        # Guardar figura
         filepath = os.path.join(self.output_dir, filename)
+        plt.tight_layout()
         plt.savefig(filepath, dpi=150, bbox_inches='tight')
         plt.close(fig)
-        
+
         print(f"✅ Plot saved: {filepath}")
         return filepath
+
+
 
     def plot_model_lr(
             self, 
@@ -434,10 +408,12 @@ class BTCPlotter:
             self.last_linear = model_data
             return self._plot_prediction_with_metrics(
                 df=df_train,
-                df_val_ground=model_data.get('df_val_ground'), #using the validations's  ground truth 
                 model_data=model_data,
-                color=self.colors['linear'],
-                filename="btc_linear_comparison.png"
+                color=self.colors['linear'],                
+                filename="btc_linear_comparison.png",
+                df_val_ground=df_val
+                #df_val_ground=model_data.get('df_val_ground'), #using the validations's  ground truth 
+
             )
     
     def plot_model_ridge(
@@ -484,11 +460,12 @@ class BTCPlotter:
             
             return self._plot_prediction_with_metrics(
                 df=df_train,
-                df_val_ground=model_data.get('df_val_ground'),
                 model_data=model_data,
                 color=self.colors['ridge'],
                 filename="btc_ridge_comparison.png",
-                title_suffix=suffix
+                title_suffix=suffix,
+                df_val_ground=df_val
+                #df_val_ground=model_data.get('df_val_ground'),
             )
     
     
@@ -571,7 +548,7 @@ class BTCPlotter:
             logger.info(f"Train: {df_train['date'].iloc[0].date()} → {df_train['date'].iloc[-1].date()}")
             logger.info(f"Val:   {df_val['date'].iloc[0].date()} → {df_val['date'].iloc[-1].date()}")
             logger.info(f"Prediction start: {lm['last_date']}")
-            logger.info(f"Train samples: {len(lm['y'])} | Val samples: {len(lm['y_val'])}")
+            logger.info(f"Train samples: {len(lm['y'])} | Val samples: {len(lm['y_val_wf'])}")
             logger.info(f"Linear R²_train: {lm['r2_train']:.4f} | R²_val: {lm['r2_val']:.4f}")
 
         logger.info("\n" + "="*60)
